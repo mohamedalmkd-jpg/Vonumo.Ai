@@ -23,7 +23,8 @@ export function Footer() {
         </div>
       </div>
       <div className="overflow-hidden" aria-hidden="true">
-        <p className="dot -mb-[0.12em] select-none text-center text-[23vw] leading-none text-white/[0.06]">VONUMO</p>
+        {/* rein dekorativ: per CSS-Inhalt, damit er nicht als (kontrastarmer) Text zählt */}
+        <p data-text="VONUMO" className="dot -mb-[0.12em] select-none text-center text-[23vw] leading-none text-white/[0.06] before:content-[attr(data-text)]" />
       </div>
       <p className="label border-t border-line py-4 text-center">© {new Date().getFullYear()} VONUMO · Alle Rechte vorbehalten</p>
     </footer>

@@ -13,3 +13,7 @@ next-env.d.ts
 # reanimate: Vergleichsbelege und Skript-Abhängigkeiten
 /.reanimate/
 /.claude/skills/*/scripts/node_modules/
+
+# visuelle Regression: nur Referenzen versionieren
+/tests/visual/current/
+/tests/visual/diff/

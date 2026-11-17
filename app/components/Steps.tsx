@@ -11,9 +11,10 @@ export function Steps() {
   return (
     <section id="ablauf" className="relative mx-auto max-w-[1400px] px-4 py-28 sm:px-6 sm:py-36">
       <SectionHead index="09" label="Ablauf" title="Vom Termin zum Livegang." sub="In etwa 2–4 Wochen – transparent, mit festen Ansprechpartnern." />
-      <ol ref={ref} className="relative mt-14 grid gap-3 md:grid-cols-5">
-        <span className="absolute inset-x-0 top-0 h-px bg-line max-md:hidden" />
-        <motion.span aria-hidden="true" style={{ scaleX: w }} className="absolute inset-x-0 top-0 h-px origin-left bg-fg max-md:hidden" />
+      <div className="relative mt-14">
+      <span aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-line max-md:hidden" />
+      <motion.span aria-hidden="true" style={{ scaleX: w }} className="absolute inset-x-0 top-0 h-px origin-left bg-fg max-md:hidden" />
+      <ol ref={ref} className="relative grid gap-3 md:grid-cols-5">
         {STEPS.map((s, i) => (
           <li key={s.title} className="relative pt-6">
             <span className="absolute -top-1 left-0 h-2 w-2 bg-fg max-md:hidden" />
@@ -25,6 +26,7 @@ export function Steps() {
           </li>
         ))}
       </ol>
+      </div>
     </section>
   );
 }

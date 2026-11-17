@@ -20,11 +20,17 @@ When the owner supplies an image, concept or video:
 
 Never finish substantial visual work without the available verification steps.
 
+### Toolchain & quality gate
+- **Full tool inventory (npm / skill / MCP / CLI / app / paid service, with verified status): `docs/toolchain.md`.** Re-audit and update it when tools change. Never claim a tool is connected unless verified.
+- Project skills (auto-loaded): **`vonumo-workflow`** (standard workflow + QA gate, use for every visual task), **`frontend-design`** (Anthropic, creative direction), **`reanimate`** (reference cloning + frame-by-frame verification).
+- QA commands: `npm run qa:visual` (pixel diff vs `tests/visual/baseline`), `npm run qa:lighthouse` / `qa:lighthouse:mobile`. Accessibility, Best Practices and SEO must stay at 100. Update baselines (`qa:visual:update`) only for intended changes.
+- Connected services: Figma MCP (View seat, so read-only), Framer MCP, GitHub, Vercel (`vonumo-v2` previews). Still need access: Spline, Krea, Magnific, Topaz, Adobe apps, Cloudinary, Supabase.
+
 ### The five design systems (apply whenever relevant)
-| # | System | What it means here | Tool status (checked 2026-11-17) |
+| # | System | What it means here | Tool status (re-checked 2026-11-17) |
 |---|---|---|---|
-| 1 | **Taste — creative direction** | Clear visual hierarchy, distinctive premium concepts, elegant type, layout, spacing and composition. No generic "AI website" look. | No such skill installed. Apply as principles, or install a reviewed skill. |
-| 2 | **Impeccable — visual quality** | Review alignment, spacing, contrast and consistency. Remove clutter. Responsive + accessible (WCAG AA contrast, focus states, reduced motion). | No such skill installed. Apply as a manual checklist before reporting. |
+| 1 | **Taste — creative direction** | Clear visual hierarchy, distinctive premium concepts, elegant type, layout, spacing and composition. No generic "AI website" look. | Not found. Covered by the **`frontend-design`** skill (Anthropic, installed) + these principles. |
+| 2 | **Impeccable — visual quality** | Review alignment, spacing, contrast and consistency. Remove clutter. Responsive + accessible (WCAG AA contrast, focus states, reduced motion). | Not found. Enforced via `qa:lighthouse` (a11y 100) + `qa:visual` + manual checklist. |
 | 3 | **Awesome Design — references** | Consult strong design patterns and keep one VONUMO language. Never copy references blindly. | No such skill installed. Use owner references in `reference/` and `docs/`. |
 | 4 | **img2threejs — 3D reconstruction** | Rebuild suitable objects from references in Three.js with real materials, light and motion. Use real assets (GLB, HDRI, PBR) when procedural is not enough. | No skill of that name. The **`reanimate`** skill (`.claude/skills/reanimate`) covers reference capture, three.js/WebGL inspection and frame-by-frame verification. |
 | 5 | **Playwright — visual verification** | Open the running site, screenshot new/changed sections, compare with references, fix and retest. | ✅ Playwright 1.63 + Chromium installed. Scripts: `scripts/flythrough-shots.cjs`, `scripts/section-shots.cjs`. `reanimate` adds `compare.ts`/`sheet.ts`. |
