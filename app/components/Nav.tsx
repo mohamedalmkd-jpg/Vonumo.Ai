@@ -28,7 +28,7 @@ export function Nav() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-ink/60 backdrop-blur-md">
+      <header className="site-header fixed inset-x-0 top-0 z-50 border-b border-line bg-ink/60 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 sm:px-6">
           <a href="#top" className="flex items-center gap-2" aria-label="VONUMO – zum Seitenanfang">
             <Logo className="h-6 w-6 text-fg" />

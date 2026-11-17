@@ -18,8 +18,8 @@ Findings to address while rebuilding:
 5. **No post-processing installed.** If the reference has bloom, chromatic aberration or DOF, add `@react-three/postprocessing` (only once the reference confirms it).
 6. **Load is ~20 s to network-idle in headless SwiftShader.** That is mostly software GL, not representative. Profile on a real GPU and iPhone before optimising.
 
-## 1. Blocked: reference video
-No reference video is in the repository or this container. Add it to `reference/` (for example `reference/hero.mp4`) and commit or upload it. Until then, steps 2–6 can't be done faithfully.
+## 1. Reference video: received
+`reference/hero-reference.mp4`, analysed in `docs/animation-spec.md`. Frame sheets are in `docs/screens/`.
 
 ## 2. Frame analysis → `docs/animation-spec.md`
 - `ffprobe`: duration, fps, resolution.
@@ -27,7 +27,7 @@ No reference video is in the repository or this container. Add it to `reference/
 - Contact sheets per shot, inspected visually.
 - The spec captures, per shot and timestamp: camera (dolly, orbit, FOV, parallax layers), scroll binding (pinned or free, scrub length in viewport heights), typography (face, size relative to the viewport, tracking, reveal method such as mask, split chars or scramble), transitions (wipes, masks, morphs), lighting (key, rim, colour, env, bloom), 3D objects (shape, material, motion), spacing grid, and timing and easing curves (estimated from frame deltas).
 
-## 3. Build section 1 (hero) to match
+## 3. Build section 1 (hero) to match: done in the first pass, see CLAUDE.md § Hero fly-through
 - Map each spec shot to a GSAP master timeline driven by ScrollTrigger (pin + scrub) feeding the R3F scene through a progress ref.
 - Camera moves happen in R3F (camera rig lerped to timeline values), not as CSS transforms on the canvas.
 - Typography reveals use GSAP SplitText (bundled free in gsap 3.13+), masks, or ScrambleText, chosen per the reference.

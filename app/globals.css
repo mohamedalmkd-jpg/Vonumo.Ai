@@ -80,6 +80,9 @@
   .chip { border: 1px solid var(--color-line); padding: .45rem .7rem; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-mute); transition: all .25s; }
   .chip:hover { color: var(--color-fg); border-color: var(--color-line-2); }
   .chip[aria-pressed="true"] { color: var(--color-ink); background: var(--color-fg); border-color: var(--color-fg); }
+  /* Immersive Kamerafahrt im Hero: Navigation weicht (siehe Hero.tsx) */
+  .site-header { transition: transform .7s var(--ease-out-expo), opacity .5s; }
+  html[data-immersive] .site-header { transform: translateY(-100%); opacity: 0; }
   .scan::after {
     content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 70; opacity: .5;
     background: repeating-linear-gradient(0deg, rgb(0 0 0 / .18) 0 1px, transparent 1px 3px);

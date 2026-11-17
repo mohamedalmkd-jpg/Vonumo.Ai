@@ -1,5 +1,5 @@
 import { Nav } from "./components/Nav";
-import { Hero, HeroBackdrop } from "./components/Hero";
+import { Hero } from "./components/Hero";
 import { Marquee } from "./components/Marquee";
 import { Details } from "./components/Details";
 import { Services } from "./components/Services";
@@ -16,7 +16,6 @@ import { Stage, HeroObject } from "./components/three";
 export default function Home() {
   return (
     <>
-      <HeroBackdrop />
       <Stage />
       <HeroObject />
       <Nav />

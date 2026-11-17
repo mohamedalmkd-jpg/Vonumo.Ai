@@ -39,9 +39,17 @@ We build premium, cinematic, highly interactive websites. Quality target = the o
 - Animate only `transform`/`opacity` in DOM; avoid animating layout, `filter` on large areas, or `backdrop-filter` during scroll.
 - Lazy‑load three.js (`next/dynamic`, `ssr:false`); no blocking assets above the fold; compress any new textures/models (KTX2/Draco/meshopt).
 
+## Hero fly-through (section 1) — how it works
+- `app/components/Hero.tsx`: `#top` is 400svh with a sticky 100svh stage. ScrollTrigger writes progress into `flight.p` (`three/flight.ts`). Chapters (`CHAPTERS`) and camera moves (`MOVES`) share that progress axis. Chapter text switches on entering a rest range: it is not scrubbed, it leaves in 0.2 s, and it enters with a char blur reveal or line clip reveal. `html[data-immersive]` hides the nav during moves and chapter 2.
+- Direction-aware snap: 180 ms after scrolling stops, Lenis glides to the next rest point, so one gesture = one cinematic move.
+- `three/FlightScene.tsx`: the camera rig follows Catmull-Rom keyframes (`WIDE` for landscape, `TALL` for portrait) with damping. The scene renders into an FBO; a full-screen pass applies speed-driven radial blur, chromatic offset, vignette and grain. The global `HeroObject` V is hidden (`v: 0`) while the hero is on screen.
+- `three/Studio.tsx`: the procedural pavilion, peaks, interior, screens (`three/textures.ts`, canvas-drawn) and dust. No external assets.
+- Adjust framing via keyframes in `FlightScene.tsx`, timing via `CHAPTERS`/`MOVES` in `flight.ts`, and snap targets via `REST_FWD`/`REST_BACK` in `Hero.tsx`.
+- **Never** give the sticky hero stage an opaque background: the WebGL canvas sits *behind* `<main>`.
+
 ## Verification workflow
 1. `npm run lint` (tsc) and `npm run build` must pass.
-2. `npx next start -p 3100`, then Playwright Chromium (pre‑installed; launch with SwiftShader GL flags for WebGL) — screenshot desktop + iPhone at fixed scroll positions/timestamps matching reference frames.
+2. `npx next start -p 3100`, then `node scripts/flythrough-shots.cjs <out> [desktop|iphone]`. Playwright Chromium with SwiftShader software GL: expect ~1 fps at 1440×900, so wait for the camera damping to settle before trusting a frame. Emulate iPhone at `deviceScaleFactor: 1`, because software GL at 3× is too slow for the loader. Close each browser context before opening the next. Software fps numbers are not real-device performance.
 3. Compare side‑by‑side with reference frames; list mismatches; fix; repeat.
 4. Check console errors, horizontal overflow, and frame time.
 
