@@ -5,7 +5,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { Scramble } from "./Scramble";
 import { DetailObject, FlightScene } from "./three";
-import { HeroPhoto } from "./HeroPhoto";
+import { HeroHotspots } from "./HeroHotspots";
+import { HeroDepth } from "./three";
 import { CHAPTERS, flight } from "./three/flight";
 import { DISCIPLINES } from "@/lib/content";
 
@@ -91,6 +92,9 @@ export function Hero() {
       flight.chapter = next;
     };
 
+    const poster = el.querySelector<HTMLElement>("[data-hero-poster]");
+    const hidePoster = () => { if (poster) poster.style.opacity = "0"; };
+    window.addEventListener("vonumo:hero-ready", hidePoster, { once: true });
     const st = ScrollTrigger.create({ trigger: el, start: "top top", end: "bottom bottom", onUpdate: (s) => sync(s.progress) });
     const vis = ScrollTrigger.create({ trigger: el, start: "top bottom", end: "bottom top", onToggle: (s) => (flight.visible = s.isActive) });
     flight.visible = vis.isActive || window.scrollY < el.offsetHeight;
@@ -136,7 +140,13 @@ export function Hero() {
     <section ref={wrap} id="top" aria-label="Einleitung" className="relative h-[400svh]">
       <div className="sticky top-0 h-[100svh] min-h-[560px] overflow-hidden">
         {/* Foto-Hero nach den Design-Bildern; der 3D-Pavillon bleibt für die Film-Aufnahme (?capture=reel) */}
-        {photo ? <HeroPhoto className="absolute inset-0" /> : <FlightScene className="absolute inset-0" />}
+        {photo ? (
+          <>
+            {/* 2.5D-Bühne (WebGL, hinter dem DOM). Poster deckt nur bis zur ersten gerenderten Szene ab. */}
+            <HeroDepth className="absolute inset-0" />
+            <img data-hero-poster src="/hero/exterior.webp" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700" />
+          </>
+        ) : <FlightScene className="absolute inset-0" />}
         {/* Lesbarkeit: weicher Verlauf hinter dem Text */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgb(4_4_6/0.55),transparent_45%)] md:bg-[linear-gradient(90deg,rgb(4_4_6/0.6),transparent_55%)]" />
 
@@ -198,6 +208,7 @@ export function Hero() {
             <a href="#termin" className="btn btn-solid pointer-events-auto mt-4 !py-2" data-scramble-host><Scramble text="Projekt starten" hover onView={false} /><span aria-hidden="true">→</span></a>
           </div>
         </div>
+        {photo && <HeroHotspots />}
       </div>
     </section>
   );

@@ -87,7 +87,12 @@ We build premium, cinematic, highly interactive websites. Quality target = the o
 - Lazy‑load three.js (`next/dynamic`, `ssr:false`); no blocking assets above the fold; compress any new textures/models (KTX2/Draco/meshopt).
 
 ## Hero fly-through (section 1) — how it works
-- **Current hero = photo sequence from the owner's design images** (`HeroPhoto.tsx`, `public/hero/exterior.webp` + `interior.webp`): scroll-driven zoom and crossfade on `flight.p`, transform/opacity only. The images are interim crops upscaled from the owner's collage. **Replace them with the owner's full-res originals (same filenames, ≥2560 px, no baked text)** when they arrive, and add more shots to `SHOTS` if supplied. The 3D pavilion below is kept for `?capture=reel` and as a fallback.
+- **Current hero = 2.5D reconstruction of the owner's design photos** (`three/HeroDepth.tsx`, View behind the DOM).
+  - Each photo has a hand-built depth map (`scripts/hero-depth.py` → `public/hero/*-depth.png`). The shader does a depth-dependent dolly, pointer/touch parallax, depth of field with focus pulls, a light switch-on with flicker, star twinkle, neon breathing, wet-ground shimmer, depth-layered dust and speed-based radial motion blur.
+  - Hotspots (`HeroHotspots.tsx`) are pinned to real objects via `heroProject()` (`three/flight.ts`, the same mapping as the shader). They open service cards, which become a bottom sheet on phones.
+  - It is honestly 2.5D, not real 3D geometry: motion is kept small so hidden areas never tear open.
+  - The images are interim crops from the owner's collage. With full-res originals (same filenames), re-tune the polygons in `hero-depth.py` and add shots.
+  - `HeroPhoto.tsx` is the old DOM-only fallback. The 3D pavilion stays for `?capture=reel`.
 - `app/components/Hero.tsx`: `#top` is 400svh with a sticky 100svh stage. ScrollTrigger writes progress into `flight.p` (`three/flight.ts`). Chapters (`CHAPTERS`) and camera moves (`MOVES`) share that progress axis. Chapter text switches on entering a rest range: it is not scrubbed, it leaves in 0.2 s, and it enters with a char blur reveal or line clip reveal. `html[data-immersive]` hides the nav during moves and chapter 2.
 - Direction-aware snap: 180 ms after scrolling stops, Lenis glides to the next rest point, so one gesture = one cinematic move.
 - `three/FlightScene.tsx`: the camera rig follows Catmull-Rom keyframes (`WIDE` for landscape, `TALL` for portrait) with damping. The scene renders into an FBO; a full-screen pass applies speed-driven radial blur, chromatic offset, vignette and grain. The global `HeroObject` V is hidden (`v: 0`) while the hero is on screen.
