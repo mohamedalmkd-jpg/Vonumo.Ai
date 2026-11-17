@@ -3,7 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera, RoundedBox, useTexture, View } from "@react-three/drei";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { getStudioEnv, pointer } from "./env";
+import { applyHdri, pointer } from "./env";
 import { services } from "./flight";
 import { makeScreen } from "./textures";
 
@@ -53,8 +53,9 @@ function Devices() {
   const mob = useMemo(() => [aeraM, mythosM, koraM, aeraM, pilotM], [aeraM, mythosM, koraM, pilotM]);
   const { gl, scene } = useThree();
   useEffect(() => {
-    scene.environment = getStudioEnv(gl);
+    const stop = applyHdri(gl, scene, "studio", 1.1);
     [aeraD, aeraM, koraD, koraM, mythosM, pilotD, pilotM].forEach((t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.needsUpdate = true; });
+    return stop;
   }, [gl, scene, aeraD, aeraM, koraD, koraM, mythosM, pilotD, pilotM]);
 
   const lapMat = useScreenMat(), phoneMat = useScreenMat();

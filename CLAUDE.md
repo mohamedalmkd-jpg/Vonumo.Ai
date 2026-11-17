@@ -62,6 +62,14 @@ We build premium, cinematic, highly interactive websites. Quality target = the o
   - Do not put CSS `transition` on an element that GSAP transforms: wrap it instead, otherwise the mask reveal stalls.
 - **Hero wordmark:** the giant "VONUMO" is a plane in the 3D landscape (`Studio.tsx` → `Wordmark`), so it gets real parallax and fog.
 
+## Rendering pipeline (pass 3)
+- Integration status (what works and what needs external tools) lives in `docs/integrations.md`. Keep it current.
+- **HDRI:** `applyHdri(gl, scene, "night" | "studio" | "city", intensity)` in `three/env.ts`. It falls back to the procedural studio env until the EXR is loaded. In the night hero keep intensity low (~0.3): HDRIs are for reflections, not fill.
+- **Material-Labor** (`MaterialLab.tsx` + `three/LabObject.tsx`, `#labor`): chrome, glass and liquid metal with drag/touch. State lives in `lab` (`three/flight.ts`).
+- **Film:** `scripts/render-reel.cjs` with `?capture=reel` (deterministic time via `window.__reelT`, `flight.time`). The section mounts only if `public/film/reel-1080.mp4` exists. Never commit placeholder or low-res video.
+- **Bloom must stay restrained** (threshold 1.0; mobile strength ≤0.25). Emissive materials use `toneMapped:false` with color > 1 to bloom selectively.
+- Animations that must be deterministic (film) read `flight.time`, not `clock`/`dt`.
+
 ## Verification workflow
 1. `npm run lint` (tsc) and `npm run build` must pass.
 2. `npx next start -p 3100`, then `node scripts/flythrough-shots.cjs <out> [desktop|iphone]`, or `node scripts/section-shots.cjs <out> <desktop|iphone> <id:p1,p2> …` for any pinned section. Snap moves jumped-to positions to the next rest point, which is expected. Playwright Chromium with SwiftShader software GL: expect ~1 fps at 1440×900, so wait for the camera damping to settle before trusting a frame. Emulate iPhone at `deviceScaleFactor: 1`, because software GL at 3× is too slow for the loader. Close each browser context before opening the next. Software fps numbers are not real-device performance.

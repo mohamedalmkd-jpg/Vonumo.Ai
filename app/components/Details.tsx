@@ -40,7 +40,7 @@ export function Details() {
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div className="mx-auto grid h-full max-w-[1400px] gap-6 px-4 pb-6 pt-20 sm:px-6 lg:grid-cols-[1fr_minmax(0,26rem)]">
           <div className="flex flex-col">
-            <SectionHead index="03" label="Unser Fundament" title="Details zählen." sub="Eine Website ist mehr als ihre Oberfläche: Jede Schicht wird gebaut, um schnell, sicher und auffindbar zu sein." />
+            <SectionHead index="04" label="Unser Fundament" title="Details zählen." sub="Eine Website ist mehr als ihre Oberfläche: Jede Schicht wird gebaut, um schnell, sicher und auffindbar zu sein." />
             <a href="#leistungen" className="btn mt-6 hidden self-start lg:inline-flex">Leistungen entdecken <span aria-hidden="true">→</span></a>
           </div>
           <ol className="flex flex-col gap-1.5 self-start lg:self-center" aria-label="Was jedes Projekt mitbringt">

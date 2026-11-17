@@ -9,6 +9,8 @@ export const flight = {
   visible: true,
   /** Intro nach dem Ladebildschirm gestartet */
   started: false,
+  /** Szenenzeit in s (Uhr; im Aufnahmemodus aus dem Bildindex) – für deterministische Animationen */
+  time: 0,
   /** aktuelles Kapitel (−1 = Kamerafahrt) */
   chapter: 0,
 };
@@ -26,3 +28,6 @@ export const MOVES = [
 
 /** Aktive Disziplin im Leistungsbereich (DOM schreibt, ServicesObject liest). */
 export const services = { active: 0 };
+
+/** Material-Labor: gewähltes Material (0 Chrom, 1 Glas, 2 Flüssigmetall), Zieh-Geschwindigkeit, Scroll-Eintritt 0…1. */
+export const lab = { material: 0 as 0 | 1 | 2, vel: 0, dragging: false, enter: 0 };

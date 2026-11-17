@@ -6,7 +6,7 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
-import { getStudioEnv, pointer } from "./env";
+import { applyHdri, pointer } from "./env";
 import { CHAPTERS, MOVES, flight } from "./flight";
 import { Studio } from "./Studio";
 
@@ -70,6 +70,29 @@ function poseAt(p: number, P: typeof WIDE, outPos: THREE.Vector3, outTgt: THREE.
 }
 const _d = new THREE.Vector3();
 
+/*
+ * Showreel-Aufnahme (?capture=reel): eigene, durchgehende Kamerafahrt für den vorgerenderten Film
+ * (scripts/render-reel.cjs). Zeit kommt aus window.__reelT (0…1), nicht aus der Uhr → deterministisch.
+ * Tief über dem nassen Vorplatz → Fahrt entlang der Fassade → um die Ecke → durch das Glas → Orbit um die V-Skulptur.
+ */
+export const REEL_SECONDS = 10;
+const REEL = path([
+  { pos: v(-11, 0.35, 15), tgt: v(-1, 1.4, 0) },
+  { pos: v(-8, 0.8, 10.8), tgt: v(0, 2.0, 0) },
+  { pos: v(-3, 1.3, 8.2), tgt: v(1.5, 2.1, 0) },
+  { pos: v(3.4, 1.5, 7.8), tgt: v(2.6, 2.1, -1) },
+  { pos: v(7.4, 1.8, 6.4), tgt: v(2.2, 2.3, -2) },
+  { pos: v(4.2, 1.9, 4.6), tgt: v(2.3, 2.5, -2.6) },
+  { pos: v(2.9, 2.3, 1.3), tgt: v(2.4, 2.6, -2.6) },
+  { pos: v(0.5, 2.45, 0.2), tgt: v(2.4, 2.65, -2.6) },
+]);
+const reelPose = (t: number, pos: THREE.Vector3, tgt: THREE.Vector3) => {
+  const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // weich an- und auslaufen
+  REEL.pos.getPoint(e, pos); REEL.tgt.getPoint(e, tgt);
+};
+const _rp = new THREE.Vector3(), _rt = new THREE.Vector3();
+const isCapture = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("capture") === "reel";
+
 const VERT = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }`;
 const FRAG = `
   uniform sampler2D tMap; uniform float uBlur; uniform float uTime; uniform float uFade; uniform vec2 uCenter; uniform float uAspect;
@@ -109,7 +132,7 @@ function Flight() {
     const c = new EffectComposer(gl, rt);
     c.renderToScreen = false;
     c.addPass(new RenderPass(scene, cam));
-    c.addPass(new UnrealBloomPass(new THREE.Vector2(w / (mobile ? 4 : 2), h / (mobile ? 4 : 2)), mobile ? 0.45 : 0.55, 0.5, 1.0));
+    c.addPass(new UnrealBloomPass(new THREE.Vector2(w / (mobile ? 4 : 2), h / (mobile ? 4 : 2)), mobile ? 0.25 : 0.55, mobile ? 0.3 : 0.5, 1.0));
     return c;
   }, [gl, scene, cam, size.width, size.height, viewport.dpr, mobile]);
   useEffect(() => () => composer.dispose(), [composer]);
@@ -123,16 +146,28 @@ function Flight() {
   }), []);
 
   useEffect(() => {
-    scene.environment = getStudioEnv(gl);
-    scene.environmentIntensity = 0.4; // Nachtszene: Studio-Umgebung nur für Glanzlichter, nicht für Böden
+    // Nacht-HDRI (Poly Haven) für physikalisch plausible Spiegelungen auf Glas, Metall und Boden
+    scene.environmentIntensity = 0.4;
+    const stopHdri = applyHdri(gl, scene, "night", 0.32);
     scene.fog = new THREE.Fog("#0e1436", 40, 190);
     st.reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isCapture()) document.documentElement.dataset.capture = "";
     // Shader vorab kompilieren, damit der erste Scroll nicht ruckelt
     gl.compile(scene, cam);
+    return stopHdri;
   }, [gl, scene, cam, st]);
 
+  const capture = useMemo(isCapture, []);
   useFrame((state, dtRaw) => {
     const dt = Math.min(dtRaw, 1 / 20);
+    if (capture) {
+      const T = (window as unknown as { __reelT?: number }).__reelT ?? 0;
+      flight.time = T * REEL_SECONDS; flight.visible = true; st.intro = 1;
+      reelPose(T, st.pos, st.tgt);
+      reelPose(Math.max(0, T - 1 / (24 * REEL_SECONDS)), _rp, _rt);
+      st.blur = Math.min(0.1, Math.max(0, _rp.distanceTo(st.pos) * 24 - 1.5) * 0.008); // analytische Bewegungsunschärfe
+    } else {
+    flight.time = state.clock.elapsedTime;
     const P = portrait ? TALL : WIDE;
     poseAt(flight.p, P, st.wantPos, st.wantTgt);
 
@@ -154,6 +189,7 @@ function Flight() {
     st.last.copy(st.pos);
     const want = st.reduce || st.intro < 1 ? 0 : Math.min(0.22, Math.max(0, speed - 1.2) * 0.012);
     st.blur += (want - st.blur) * (1 - Math.exp(-dt * 10));
+    }
 
     const aspect = size.width / Math.max(1, size.height);
     const hfov = portrait ? 74 : 64;
@@ -165,7 +201,7 @@ function Flight() {
     cam.updateProjectionMatrix();
 
     mat.uniforms.uBlur.value = st.blur;
-    mat.uniforms.uTime.value = state.clock.elapsedTime;
+    mat.uniforms.uTime.value = flight.time;
     mat.uniforms.uFade.value = st.reduce ? 1 : Math.min(1, st.intro * 1.6);
     mat.uniforms.uAspect.value = aspect;
 

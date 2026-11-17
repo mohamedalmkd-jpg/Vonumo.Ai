@@ -38,7 +38,7 @@ export function Terminal() {
   return (
     <section id="build" className="relative mx-auto max-w-[1400px] px-4 py-28 sm:px-6 sm:py-36">
       <div className="grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] [&>*]:min-w-0">
-        <SectionHead index="05" label="Live-Build" title="Code, der sich selbst schreibt." sub="Vorschau-Links nach jedem Update, automatisches Deployment und Rückkehr zur letzten Version in Sekunden." />
+        <SectionHead index="06" label="Live-Build" title="Code, der sich selbst schreibt." sub="Vorschau-Links nach jedem Update, automatisches Deployment und Rückkehr zur letzten Version in Sekunden." />
         <div ref={box} className="hud brackets" role="img" aria-label="Animierter Code-Editor, der eine Website baut und veröffentlicht">
           <div className="flex items-center gap-3 border-b border-line px-4 py-3">
             <span className="flex gap-1.5">{[0, 1, 2].map((k) => <i key={k} className="h-2 w-2 bg-white/25" />)}</span>

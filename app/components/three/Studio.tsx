@@ -128,10 +128,10 @@ function Plaza({ mobile }: { mobile: boolean }) {
       <mesh rotation-x={-Math.PI / 2} position-y={0}>
         <planeGeometry args={[150, 150]} />
         {mobile || !on ? (
-          <meshStandardMaterial color="#05060b" roughness={0.6} metalness={0.15} roughnessMap={tiles} envMapIntensity={0.15} />
+          <meshStandardMaterial color="#05060b" roughness={0.92} metalness={0.05} envMapIntensity={0.05} />
         ) : (
           <MeshReflectorMaterial resolution={1024} mirror={0.6} mixBlur={0.6} mixStrength={1.7} mixContrast={1.15} blur={[160, 40]} depthScale={0} 
-            roughnessMap={tiles} roughness={0.4} metalness={0.5} color="#080910" envMapIntensity={0.35} />
+            roughnessMap={tiles} roughness={0.4} metalness={0.5} color="#080910" envMapIntensity={0.06} />
         )}
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position-y={-0.02}><planeGeometry args={[600, 600]} /><meshStandardMaterial color="#030407" roughness={0.9} /></mesh>
@@ -206,7 +206,7 @@ function Sculpture() {
   const geo = useMemo(makeVGeometry, []);
   const ref = useRef<THREE.Group>(null);
   // zeigt zur Kamera im Kapitel „Erlebnis“ und pendelt nur leicht (nie hochkant)
-  useFrame((s) => { if (ref.current) { const t = s.clock.elapsedTime; ref.current.rotation.y = -0.62 + Math.sin(t * 0.35) * 0.3; ref.current.position.y = 4.05 + Math.sin(t * 0.8) * 0.06; } });
+  useFrame(() => { if (ref.current) { const t = flight.time; ref.current.rotation.y = -0.62 + Math.sin(t * 0.35) * 0.3; ref.current.position.y = 4.05 + Math.sin(t * 0.8) * 0.06; } });
   const m = useMemo(() => ({
     rim: new THREE.MeshBasicMaterial({ color: new THREE.Color("#7b6bff").multiplyScalar(2.4), side: THREE.BackSide, toneMapped: false }),
     ring: glow("#4f8bff", 3), ring2: glow("#7b6bff", 2),
@@ -218,7 +218,7 @@ function Sculpture() {
       <mesh position-y={FLOOR + 0.02} rotation-x={-Math.PI / 2} material={m.ring2}><ringGeometry args={[1.12, 1.16, 96]} /></mesh>
       <group ref={ref} position-y={4.05}>
         <mesh geometry={geo} scale={0.72}>
-          <meshPhysicalMaterial color="#04050c" metalness={0.6} roughness={0.12} clearcoat={1} clearcoatRoughness={0.05} iridescence={0.5} iridescenceIOR={1.3} envMapIntensity={2.4} />
+          <meshPhysicalMaterial color="#04050c" metalness={0.6} roughness={0.12} clearcoat={1} clearcoatRoughness={0.05} iridescence={0.5} iridescenceIOR={1.3} envMapIntensity={1.8} />
         </mesh>
         <mesh geometry={geo} scale={0.735} material={m.rim} />
       </group>
@@ -236,9 +236,10 @@ function Dust({ count }: { count: number }) {
     const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(p, 3));
     return { geo: g, speed: sp };
   }, [count]);
-  useFrame((_, dt) => {
-    const a = geo.attributes.position as THREE.BufferAttribute, arr = a.array as Float32Array;
-    for (let i = 0; i < count; i++) { arr[i * 3 + 1] -= speed[i] * dt; if (arr[i * 3 + 1] < 0) arr[i * 3 + 1] = 14; }
+  const base = useMemo(() => Float32Array.from(geo.attributes.position.array as Float32Array), [geo]);
+  useFrame(() => {
+    const a = geo.attributes.position as THREE.BufferAttribute, arr = a.array as Float32Array, t = flight.time;
+    for (let i = 0; i < count; i++) arr[i * 3 + 1] = (((base[i * 3 + 1] - speed[i] * t) % 14) + 14) % 14;
     a.needsUpdate = true;
   });
   return <points geometry={geo} frustumCulled={false}><pointsMaterial size={0.035} color="#c8d2ff" transparent opacity={0.45} depthWrite={false} blending={THREE.AdditiveBlending} /></points>;
@@ -257,7 +258,7 @@ export function Studio({ mobile }: { mobile: boolean }) {
       soffit: new THREE.MeshStandardMaterial({ map: wood, roughness: 0.55, metalness: 0.05, emissive: new THREE.Color("#ff9a55"), emissiveMap: wood, emissiveIntensity: 0.22 }),
       woodWall: new THREE.MeshStandardMaterial({ map: woodV, roughness: 0.6, emissive: new THREE.Color("#ff9a55"), emissiveMap: woodV, emissiveIntensity: 0.15 }),
       marble: new THREE.MeshStandardMaterial({ map: makeMarble(), roughness: 0.25, metalness: 0.05, color: "#9aa0b4" }),
-      floor: new THREE.MeshStandardMaterial({ color: "#0d0e13", roughness: 0.3, metalness: 0.5, envMapIntensity: 0.8 }),
+      floor: new THREE.MeshStandardMaterial({ color: "#0d0e13", roughness: 0.42, metalness: 0.3, envMapIntensity: 0.3 }),
       mullion: new THREE.MeshStandardMaterial({ color: "#030305", roughness: 0.3, metalness: 0.85 }),
       glass: new THREE.MeshPhysicalMaterial({ color: "#dfe5ff", roughness: 0.03, metalness: 0.1, transparent: true, opacity: 0.08, envMapIntensity: 1.6, side: THREE.DoubleSide, depthWrite: false }),
       blue: glow("#4f7bff", 2.6), violet: glow("#8b6bff", 2.4), warm: glow("#ffd8a8", 2.2), white: glow("#eef2ff", 1.7),
@@ -275,7 +276,7 @@ export function Studio({ mobile }: { mobile: boolean }) {
       <Stars count={mobile ? 700 : 1600} />
       <hemisphereLight args={["#24305e", "#020306", 0.4]} />
       <directionalLight position={[-30, 40, 30]} intensity={2.2} color="#b8c4ff" />
-      <directionalLight position={[12, 18, -40]} intensity={2.2} color="#5a6bff" />
+      <directionalLight position={[12, 18, -40]} intensity={mobile ? 1.1 : 1.6} color="#5a6bff" />
       <group position-y={-SINK}>
       <pointLight position={[-1, CEIL - 0.3, FRONT + 1.2]} intensity={16} distance={9} decay={2} color="#ffb27a" />
       <pointLight position={[4, CEIL - 0.3, FRONT + 1.2]} intensity={16} distance={9} decay={2} color="#ffb27a" />

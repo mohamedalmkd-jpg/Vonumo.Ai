@@ -92,6 +92,10 @@
 }
 
 @keyframes blink { 50% { opacity: 0; } }
+
+/* Aufnahmemodus für den Showreel-Film: nur die WebGL-Leinwand ist sichtbar */
+html[data-capture] body * { visibility: hidden !important; }
+html[data-capture] canvas { visibility: visible !important; }
 @keyframes rise { from { opacity: 0; transform: translateY(12px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 
 /* Showroom bei „reduzierte Bewegung“: Projekte untereinander statt gepinnter Bildfolge */

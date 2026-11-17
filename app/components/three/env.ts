@@ -37,3 +37,32 @@ export const pointer = { x: 0, y: 0 };
 if (typeof window !== "undefined") {
   window.addEventListener("pointermove", (e) => { pointer.x = (e.clientX / window.innerWidth) * 2 - 1; pointer.y = -(e.clientY / window.innerHeight) * 2 + 1; }, { passive: true });
 }
+
+/*
+ * Echte HDRI-Umgebungen (Poly Haven, CC0 – über @pmndrs/assets, als .exr in public/hdri/).
+ * Werden einmal geladen, per PMREM vorgefiltert und zwischengespeichert. Bis sie da sind, gilt getStudioEnv().
+ */
+export type Hdri = "night" | "studio" | "city";
+const hdris = new Map<Hdri, Promise<THREE.Texture>>();
+export function loadHdri(gl: THREE.WebGLRenderer, name: Hdri) {
+  let p = hdris.get(name);
+  if (!p) {
+    p = import("three/examples/jsm/loaders/EXRLoader.js").then(async ({ EXRLoader }) => {
+      const eq = await new EXRLoader().loadAsync(`/hdri/${name}.exr`);
+      eq.mapping = THREE.EquirectangularReflectionMapping;
+      const pm = new THREE.PMREMGenerator(gl);
+      const env = pm.fromEquirectangular(eq).texture;
+      eq.dispose(); pm.dispose();
+      return env;
+    });
+    hdris.set(name, p);
+  }
+  return p;
+}
+/** Setzt sofort die Studio-Umgebung und tauscht sie gegen die HDRI, sobald geladen. */
+export function applyHdri(gl: THREE.WebGLRenderer, scene: THREE.Scene, name: Hdri, intensity = 1) {
+  scene.environment = getStudioEnv(gl);
+  let alive = true;
+  loadHdri(gl, name).then((t) => { if (alive) { scene.environment = t; scene.environmentIntensity = intensity; } }).catch(() => {});
+  return () => { alive = false; };
+}

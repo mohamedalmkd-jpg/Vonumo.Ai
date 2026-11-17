@@ -9,12 +9,12 @@ const { chromium, devices } = require("playwright");
   const errs = []; p.on("pageerror", (e) => errs.push(String(e))); p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
   await p.goto("http://localhost:3100/", { waitUntil: "load" });
   await p.waitForFunction(() => window.__vonumoLoaded, null, { timeout: 90000 });
-  await p.waitForTimeout(3000);
+  await p.waitForTimeout(Number(process.env.WARMUP || 3000));
   for (const spec of specs) {
     const [id, list] = spec.split(":");
     for (const prog of list.split(",").map(Number)) {
       await p.evaluate(([id, prog]) => { const el = document.getElementById(id); const y = el.offsetTop + prog * Math.max(0, el.offsetHeight - innerHeight); window.__lenis ? window.__lenis.scrollTo(y, { immediate: true }) : scrollTo(0, y); }, [id, prog]);
-      await p.waitForTimeout(2600);
+      await p.waitForTimeout(Number(process.env.SETTLE || 2600));
       await p.screenshot({ path: `${out}/${dev}-${id}-${String(prog).replace(".", "_")}.png`, timeout: 120000 });
     }
   }
