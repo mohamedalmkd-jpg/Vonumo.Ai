@@ -13,11 +13,17 @@ export function Loader() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const state = { p: 0 };
     window.__lenis?.stop();
+    // On the actual site, wait for the photographic WebGL textures, not an unrelated
+    // hidden 3D object. Reel capture mode still uses the scene-ready signal.
+    const reel = new URLSearchParams(window.location.search).get("capture") === "reel";
     const stage = new Promise<void>((res) => {
-      if ((window as unknown as { __stageReady?: boolean }).__stageReady) return res();
-      window.addEventListener("vonumo:stage-ready", () => res(), { once: true });
+      const flags = window as unknown as { __stageReady?: boolean; __vonumoHeroAssetsReady?: boolean };
+      const flag = reel ? flags.__stageReady : flags.__vonumoHeroAssetsReady;
+      if (flag) return res();
+      window.addEventListener(reel ? "vonumo:stage-ready" : "vonumo:hero-assets-ready", () => res(), { once: true });
     });
-    const ready = Promise.race([Promise.all([document.fonts.ready, stage]), new Promise((r) => setTimeout(r, 3500))]);
+    // Keep a bounded fallback if WebGL is unavailable: the photographic poster stays visible.
+    const ready = Promise.race([Promise.all([document.fonts.ready, stage]), new Promise<void>((r) => setTimeout(r, 4000))]);
     const render = () => {
       if (num.current) num.current.textContent = String(Math.round(state.p)).padStart(3, "0");
       if (bar.current) bar.current.style.transform = `scaleX(${state.p / 100})`;
