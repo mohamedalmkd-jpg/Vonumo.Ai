@@ -141,7 +141,7 @@ export function Hero() {
         <div data-chapter className="invisible absolute inset-0 mx-auto max-w-[1400px] px-4 sm:px-6">
           <div className="absolute left-4 right-4 top-[11%] sm:left-6 md:top-[30%] md:max-w-[52rem]">
             <p data-eyebrow className="label">01 / Studio</p>
-            <h1 className="mt-4 text-[clamp(2.2rem,4.2vw,4.2rem)] font-extralight leading-[1.04] tracking-[-0.02em] text-fg/95">
+            <h1 className="mt-4 text-[clamp(2.2rem,4.2vw,4.2rem)] font-light leading-[1.04] tracking-[-0.02em] text-fg/95">
               <span className="block"><Chars text="Websites mit Tiefe." /></span>
               <span className="block text-fg/60"><Chars text="KI mit Wirkung." /></span>
             </h1>
@@ -158,10 +158,10 @@ export function Hero() {
         {/* Kapitel 02 – Detail (senkrechte Typo + Inset) */}
         <div data-chapter className="invisible absolute inset-0 mx-auto max-w-[1400px] px-4 sm:px-6">
           <p className="label absolute left-4 top-6 sm:left-6">02 / Detail</p>
-          <h2 className="absolute bottom-[34%] left-3 flex items-end text-[clamp(3rem,6.6vw,7rem)] font-extralight uppercase leading-[0.86] tracking-[-0.01em] text-fg/80 sm:left-5 md:bottom-[30%]">
+          <h2 className="absolute left-4 top-[24%] text-[clamp(2.8rem,5.6vw,6rem)] font-light uppercase leading-[0.98] tracking-[-0.01em] text-fg sm:left-6 md:top-[22%]">
             <span className="sr-only">Jedes Pixel zählt.</span>
-            {["Jedes", "Pixel", "zählt"].map((w) => (
-              <span key={w} aria-hidden="true" data-line className="block rotate-180 [writing-mode:vertical-rl]">{w}</span>
+            {["Jedes", "Pixel", "zählt."].map((w) => (
+              <span key={w} aria-hidden="true" data-line className="block">{w}</span>
             ))}
           </h2>
           <div className="absolute bottom-6 left-4 sm:left-6">
@@ -177,7 +177,7 @@ export function Hero() {
         <div data-chapter className="invisible absolute inset-0 mx-auto max-w-[1400px] px-4 sm:px-6">
           <div className="absolute left-4 right-4 top-[14%] sm:left-6 md:top-[30%] md:max-w-[44rem]">
             <p data-eyebrow className="label">03 / Erlebnis</p>
-            <h2 className="mt-4 text-[clamp(2.5rem,5vw,5rem)] font-extralight leading-[1.04] tracking-[-0.02em] text-fg/90">
+            <h2 className="mt-4 text-[clamp(2.5rem,5vw,5rem)] font-light leading-[1.04] tracking-[-0.02em] text-fg/90">
               <span className="block"><Chars text="Interfaces, die" /></span>
               <span className="block"><Chars text="man betritt." /></span>
             </h2>

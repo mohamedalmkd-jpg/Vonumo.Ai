@@ -1,6 +1,9 @@
 "use client";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
-import { useFBO, View } from "@react-three/drei";
+import { View } from "@react-three/drei";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { getStudioEnv, pointer } from "./env";
@@ -21,28 +24,28 @@ const path = (p: Pose[]): Path => ({
  */
 const WIDE = {
   move1: path([
-    { pos: v(-9.4, 2.3, 17.5), tgt: v(-2.9, 4.5, 0) },
-    { pos: v(-8.2, 2.7, 14), tgt: v(-1.0, 4.7, 0) },
-    { pos: v(-6.4, 3.0, 10.8), tgt: v(1.6, 4.9, 0) },
+    { pos: v(-6.6, 0.85, 12.2), tgt: v(-0.6, 2.4, 0) },
+    { pos: v(-5.8, 1.3, 9.8), tgt: v(0.6, 2.8, 0) },
+    { pos: v(-4.4, 1.7, 7.6), tgt: v(2.4, 3.0, 0) },
   ]),
   move2: path([
-    { pos: v(-6.4, 3.0, 10.8), tgt: v(1.6, 4.9, 0) },
-    { pos: v(-1.2, 3.7, 6.8), tgt: v(1.2, 3.9, -3) },
-    { pos: v(0.4, 3.7, 3.9), tgt: v(1.4, 3.8, -4) },
-    { pos: v(-2.0, 3.5, 2.2), tgt: v(2.6, 3.9, -5) },
+    { pos: v(-4.4, 1.7, 7.6), tgt: v(2.4, 3.0, 0) },
+    { pos: v(0.2, 2.1, 7.0), tgt: v(1.6, 2.4, -3) },
+    { pos: v(1.1, 2.15, 4.2), tgt: v(2.0, 2.4, -4) },
+    { pos: v(-1.7, 2.25, 2.3), tgt: v(2.3, 2.55, -3.6) },
   ]),
 };
 const TALL = {
   move1: path([
-    { pos: v(-4.2, 1.9, 24.5), tgt: v(0.6, 7.6, 0) },
-    { pos: v(-5.3, 2.5, 19), tgt: v(0.9, 6.0, 0) },
-    { pos: v(-6.2, 2.9, 13.5), tgt: v(1.5, 4.6, 0) },
+    { pos: v(-3.6, 0.6, 19.5), tgt: v(0.7, 5.3, 0) },
+    { pos: v(-5.3, 1.1, 19), tgt: v(0.9, 4.6, 0) },
+    { pos: v(-6.2, 1.5, 13.5), tgt: v(1.5, 3.2, 0) },
   ]),
   move2: path([
-    { pos: v(-6.2, 2.9, 13.5), tgt: v(1.5, 4.6, 0) },
-    { pos: v(-1.0, 3.6, 7.2), tgt: v(1.2, 3.8, -3) },
-    { pos: v(0.6, 3.7, 3.9), tgt: v(1.6, 3.8, -4) },
-    { pos: v(-1.6, 3.7, 2.8), tgt: v(1.9, 3.1, -5) },
+    { pos: v(-6.2, 1.5, 13.5), tgt: v(1.5, 3.2, 0) },
+    { pos: v(-1.0, 2.2, 7.2), tgt: v(1.2, 2.4, -3) },
+    { pos: v(0.6, 2.3, 3.9), tgt: v(1.6, 2.4, -4) },
+    { pos: v(0.3, 2.5, 1.7), tgt: v(2.4, 2.15, -4.6) },
   ]),
 };
 // Kleiner Vorschub während der Ruhephasen (Referenz: Kamera „atmet“ beim Weiterscrollen)
@@ -97,9 +100,19 @@ function Flight() {
   const { gl, size, viewport } = useThree();
   const mobile = size.width < 768;
   const portrait = size.height > size.width;
-  const fbo = useFBO(Math.max(2, Math.round(size.width * viewport.dpr)), Math.max(2, Math.round(size.height * viewport.dpr)), { samples: mobile ? 0 : 4 });
   const [scene] = useState(() => new THREE.Scene());
   const cam = useMemo(() => new THREE.PerspectiveCamera(40, 1, 0.1, 600), []);
+  // Szene → (MSAA) → Bloom; Ergebnis liest die Unschärfe-Fläche als Textur
+  const composer = useMemo(() => {
+    const w = Math.max(2, Math.round(size.width * viewport.dpr)), h = Math.max(2, Math.round(size.height * viewport.dpr));
+    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: mobile ? 0 : 4 });
+    const c = new EffectComposer(gl, rt);
+    c.renderToScreen = false;
+    c.addPass(new RenderPass(scene, cam));
+    c.addPass(new UnrealBloomPass(new THREE.Vector2(w / (mobile ? 4 : 2), h / (mobile ? 4 : 2)), mobile ? 0.45 : 0.55, 0.5, 1.0));
+    return c;
+  }, [gl, scene, cam, size.width, size.height, viewport.dpr, mobile]);
+  useEffect(() => () => composer.dispose(), [composer]);
   const mat = useMemo(() => new THREE.ShaderMaterial({
     vertexShader: VERT, fragmentShader: FRAG, depthTest: false, depthWrite: false,
     uniforms: { tMap: { value: null }, uBlur: { value: 0 }, uTime: { value: 0 }, uFade: { value: 0 }, uCenter: { value: new THREE.Vector2(0.5, 0.5) }, uAspect: { value: 1 } },
@@ -111,7 +124,8 @@ function Flight() {
 
   useEffect(() => {
     scene.environment = getStudioEnv(gl);
-    scene.fog = new THREE.Fog("#0a0f24", 30, 150);
+    scene.environmentIntensity = 0.4; // Nachtszene: Studio-Umgebung nur für Glanzlichter, nicht für Böden
+    scene.fog = new THREE.Fog("#0e1436", 40, 190);
     st.reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // Shader vorab kompilieren, damit der erste Scroll nicht ruckelt
     gl.compile(scene, cam);
@@ -154,21 +168,19 @@ function Flight() {
     mat.uniforms.uTime.value = state.clock.elapsedTime;
     mat.uniforms.uFade.value = st.reduce ? 1 : Math.min(1, st.intro * 1.6);
     mat.uniforms.uAspect.value = aspect;
-    mat.uniforms.tMap.value = fbo.texture;
 
     if (!flight.visible) return;
     const scissor = gl.getScissorTest();
     gl.setScissorTest(false);
-    gl.setRenderTarget(fbo);
-    gl.clear();
-    gl.render(scene, cam);
+    composer.render(dt);
+    mat.uniforms.tMap.value = composer.readBuffer.texture;
     gl.setRenderTarget(null);
     gl.setScissorTest(scissor);
   });
 
   return (
     <>
-      {createPortal(<Studio mobile={mobile} />, scene)}
+      {createPortal(<Studio mobile={mobile} />, scene, { camera: cam })}
       <mesh frustumCulled={false} material={mat} renderOrder={-1}><planeGeometry args={[2, 2]} /></mesh>
     </>
   );

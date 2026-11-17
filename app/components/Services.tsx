@@ -67,7 +67,7 @@ export function Services() {
                       <span className={`label w-7 shrink-0 tabular-nums transition-colors ${on ? "text-a2" : ""}`}>{String(i + 1).padStart(2, "0")}</span>
                       <span className="block overflow-hidden pr-4">
                         <span data-mask className="block">
-                          <span className={`block whitespace-nowrap text-[clamp(1.55rem,4.6vw,4.4rem)] font-extralight leading-[1.04] tracking-[-0.035em] transition-[color,transform] duration-700 ease-[cubic-bezier(.16,1,.3,1)] ${on ? "translate-x-2 text-fg" : "text-fg/25 group-hover:translate-x-1 group-hover:text-fg/60"}`}>{d.title}</span>
+                          <span className={`block whitespace-nowrap text-[clamp(1.55rem,4.6vw,4.4rem)] font-light leading-[1.04] tracking-[-0.025em] transition-[color,transform] duration-700 ease-[cubic-bezier(.16,1,.3,1)] ${on ? "translate-x-2 text-fg" : "text-fg/25 group-hover:translate-x-1 group-hover:text-fg/60"}`}>{d.title}</span>
                         </span>
                       </span>
                     </button>

@@ -94,7 +94,7 @@ export function Showroom() {
         {/* Intro: übergroße Typo hinter dem wachsenden Fenster */}
         <div data-intro className="absolute inset-0 mx-auto flex max-w-[1400px] flex-col justify-center px-4 sm:px-6">
           <p className="label flex items-center gap-3"><span className="text-fg">[ 01 ]</span><span className="h-px w-8 bg-line-2" />Ausgewählte Arbeiten</p>
-          <h2 className="mt-6 text-[clamp(3.4rem,12.5vw,13rem)] font-extralight leading-[0.88] tracking-[-0.05em]">
+          <h2 className="mt-6 text-[clamp(3.4rem,12.5vw,13rem)] font-light leading-[0.88] tracking-[-0.03em]">
             <span className="block">Arbeiten,</span>
             <span className="block pl-[14vw] text-fg/35">die bleiben.</span>
           </h2>
@@ -123,7 +123,7 @@ export function Showroom() {
 
             <div className="absolute inset-x-0 bottom-0 mx-auto max-w-[1400px] px-4 pb-7 sm:px-6 sm:pb-10">
               <div className="overflow-hidden"><p data-cl className="label flex flex-wrap gap-x-3"><span className="text-fg">{String(i + 1).padStart(2, "0")}</span><span>{w.kind}</span><span style={{ color: w.accent }}>Konzeptstudie</span></p></div>
-              <h3 className="mt-2 text-[clamp(3.6rem,11vw,11.5rem)] font-extralight leading-[0.9] tracking-[-0.05em]">
+              <h3 className="mt-2 text-[clamp(3.6rem,11vw,11.5rem)] font-light leading-[0.9] tracking-[-0.03em]">
                 <span className="block overflow-hidden pb-[0.04em]"><span data-cl className="block">{w.name}</span></span>
               </h3>
               <div className="mt-3 grid gap-3 sm:mt-4 lg:max-w-[calc(100%-min(14vw,250px)-4rem)] lg:grid-cols-[minmax(0,28rem)_auto] lg:items-end lg:justify-between">

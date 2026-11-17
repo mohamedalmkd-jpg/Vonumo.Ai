@@ -157,3 +157,91 @@ export function makeScreen(kind: ScreenKind) {
   document.fonts?.ready.then(() => { draw(kind, x, 1024, 640); t.needsUpdate = true; });
   return t;
 }
+
+/** Warme Holzlamellen (Dachuntersicht, Akzentwand). */
+export function makeWood(vertical = false) {
+  const [c, x] = canvas(512, 512);
+  const r = rng(11);
+  for (let i = 0; i < 32; i++) {
+    const l = 0.75 + r() * 0.35;
+    x.fillStyle = `rgb(${Math.round(120 * l)},${Math.round(74 * l)},${Math.round(44 * l)})`;
+    if (vertical) x.fillRect(i * 16, 0, 13, 512); else x.fillRect(0, i * 16, 512, 13);
+    for (let k = 0; k < 40; k++) {
+      x.fillStyle = `rgba(30,15,5,${r() * 0.18})`;
+      if (vertical) x.fillRect(i * 16 + r() * 13, r() * 512, 1, 20 + r() * 80); else x.fillRect(r() * 512, i * 16 + r() * 13, 20 + r() * 80, 1);
+    }
+  }
+  x.fillStyle = "#120a05";
+  for (let i = 0; i < 32; i++) { if (vertical) x.fillRect(i * 16 + 13, 0, 3, 512); else x.fillRect(0, i * 16 + 13, 512, 3); }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+
+/** Heller Marmor mit Adern (Rückwand innen). */
+export function makeMarble() {
+  const [c, x] = canvas(1024, 1024);
+  const r = rng(23);
+  const g = x.createLinearGradient(0, 0, 1024, 1024);
+  g.addColorStop(0, "#d9dbe2"); g.addColorStop(1, "#b9bcc7");
+  x.fillStyle = g; x.fillRect(0, 0, 1024, 1024);
+  // weiche Wolken
+  for (let i = 0; i < 40; i++) {
+    const gx = r() * 1024, gy = r() * 1024, rad = 80 + r() * 260;
+    const g2 = x.createRadialGradient(gx, gy, 0, gx, gy, rad);
+    g2.addColorStop(0, `rgba(150,156,175,${0.08 + r() * 0.1})`); g2.addColorStop(1, "rgba(150,156,175,0)");
+    x.fillStyle = g2; x.fillRect(gx - rad, gy - rad, rad * 2, rad * 2);
+  }
+  // geschwungene Adern (diagonal, ruhig)
+  for (let v = 0; v < 14; v++) {
+    x.strokeStyle = `rgba(${70 + r() * 30},${74 + r() * 30},${92 + r() * 30},${0.12 + r() * 0.3})`;
+    x.lineWidth = 0.8 + r() * 2.2;
+    x.beginPath();
+    let px = -100 + r() * 700, py = -50;
+    x.moveTo(px, py);
+    for (let k = 0; k < 6; k++) {
+      const nx = px + 120 + r() * 160, ny = py + 160 + r() * 140;
+      x.quadraticCurveTo(px + (r() - 0.5) * 240, (py + ny) / 2, nx, ny);
+      px = nx; py = ny;
+    }
+    x.stroke();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+
+/** Nasse Bodenplatten: Rauheitskarte mit Fugen und Pfützen. */
+export function makeTiles() {
+  const [c, x] = canvas(512, 512);
+  const r = rng(5);
+  x.fillStyle = "#6a6a6a"; x.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 60; i++) { // Pfützen = glatt (dunkel in der Rauheitskarte)
+    const gx = r() * 512, gy = r() * 512, rad = 20 + r() * 70;
+    const g = x.createRadialGradient(gx, gy, 0, gx, gy, rad);
+    g.addColorStop(0, "rgba(0,0,0,0.85)"); g.addColorStop(1, "rgba(0,0,0,0)");
+    x.fillStyle = g; x.fillRect(gx - rad, gy - rad, rad * 2, rad * 2);
+  }
+  x.fillStyle = "#8a8a8a";
+  for (let i = 0; i <= 512; i += 256) { x.fillRect(i - 1, 0, 2, 512); x.fillRect(0, i - 1, 512, 2); }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8;
+  return t;
+}
+
+/** Hinterleuchteter Schriftzug für die Fassade. */
+export function makeSign(text: string) {
+  const [c, x] = canvas(1024, 256);
+  const draw = () => {
+    x.clearRect(0, 0, 1024, 256);
+    x.fillStyle = "#fff"; x.textAlign = "center"; x.textBaseline = "middle";
+    x.font = "500 150px 'Outfit Variable', 'Geist Mono Variable', sans-serif";
+    (x as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = "18px";
+    x.fillText(text, 512, 138);
+  };
+  draw();
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  document.fonts?.ready.then(() => { draw(); t.needsUpdate = true; });
+  return t;
+}

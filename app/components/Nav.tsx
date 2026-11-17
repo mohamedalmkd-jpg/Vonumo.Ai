@@ -32,7 +32,7 @@ export function Nav() {
         <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 sm:px-6">
           <a href="#top" className="flex items-center gap-2" aria-label="VONUMO – zum Seitenanfang">
             <Logo className="h-6 w-6 text-fg" />
-            <span className="dot text-lg">VONUMO</span>
+            <span className="text-[18px] font-medium tracking-[0.06em]">VONUMO</span>
           </a>
           <nav aria-label="Hauptnavigation" className="hidden md:block">
             <ul className="flex items-center gap-7 text-[11px] uppercase tracking-[0.16em]">

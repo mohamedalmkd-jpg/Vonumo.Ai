@@ -13,9 +13,9 @@ const { chromium, devices } = require('playwright');
     const go = async (prog, wait, tag) => {
       await p.evaluate((prog) => { const el = document.getElementById('top'); const max = el.offsetHeight - innerHeight; const y = el.offsetTop + prog*max; window.__lenis ? window.__lenis.scrollTo(y, { immediate: true }) : scrollTo(0, y); }, prog);
       await p.waitForTimeout(wait);
-      await p.screenshot({ path: `${out}/${name}-${tag}.png` });
+      await p.screenshot({ path: `${out}/${name}-${tag}.png`, timeout: 240000 });
     };
-    await p.screenshot({ path: `${out}/${name}-A.png` });
+    await p.screenshot({ path: `${out}/${name}-A.png`, timeout: 240000 });
     await go(0.18, 250, 'move1');
     await go(0.40, 3500, 'B');
     await go(0.66, 250, 'move2');
