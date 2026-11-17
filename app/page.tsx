@@ -1,6 +1,6 @@
 import { Nav } from "./components/Nav";
 import { Hero } from "./components/Hero";
-import { Services } from "./components/Services";
+import { Journey } from "./components/journey/Journey";
 import { Layers } from "./components/Layers";
 import { Terminal } from "./components/Terminal";
 import { Features } from "./components/Features";
@@ -16,7 +16,7 @@ export default function Home() {
       <Nav />
       <main id="main" className="overflow-x-clip">
         <Hero />
-        <Services />
+        <Journey />
         <Layers />
         <Terminal />
         <Features />

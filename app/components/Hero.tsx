@@ -11,13 +11,16 @@ export function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : 160]);
   const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, reduce ? 1 : 1.15]);
+  // Kamera-Fahrt in die Aurora hinein – leitet nahtlos in die 3D-Fahrt über
+  const scale = useTransform(scrollYProgress, [0, 1], [1, reduce ? 1 : 1.9]);
+  const bgFade = useTransform(scrollYProgress, [0.5, 1], [1, 0]);
+  const bgBlur = useTransform(scrollYProgress, [0, 1], reduce ? ["blur(0px)", "blur(0px)"] : ["blur(0px)", "blur(14px)"]);
 
   const ease = [0.16, 1, 0.3, 1] as const;
 
   return (
     <section ref={ref} id="top" className="relative isolate flex min-h-[100svh] items-center overflow-hidden pt-24">
-      <motion.div style={{ scale }} className="absolute inset-0 -z-10">
+      <motion.div style={{ scale, opacity: bgFade, filter: bgBlur }} className="absolute inset-0 -z-10 will-change-transform">
         <ShaderBg className="absolute inset-0" />
       </motion.div>
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgb(5_6_11/0.75),rgb(5_6_11/0.35)_60%,transparent)] md:bg-[linear-gradient(90deg,rgb(5_6_11/0.6),transparent_55%)]" />
