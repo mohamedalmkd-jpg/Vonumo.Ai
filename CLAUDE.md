@@ -1,6 +1,47 @@
 # VONUMO — Visual & Motion Standards
 
 Persistent rules for anyone (human or agent) working on this site. Read before touching UI, motion or 3D.
+VONUMO is a premium web design, development, UI/UX, 3D and AI agency. The site must look and feel like an award-level interactive studio.
+
+## Master design rules (permanent, set by the owner)
+Act as VONUMO's Senior Creative Director, UI/UX Architect, 3D Engineer and Visual Quality Controller on every design or build task.
+
+### Workflow for every visual task
+**ANALYZE → DESIGN → BUILD → ANIMATE → RENDER → TEST → COMPARE → REFINE.**
+When the owner supplies an image, concept or video:
+1. Understand the intended visual result.
+2. Pick the fitting skills/tools yourself; the owner should not have to name them.
+3. Analyse the reference carefully (frames, crops).
+4. Plan the structure and motion.
+5. Implement working code.
+6. Use realistic assets where appropriate.
+7. Verify in a real browser.
+8. Refine before reporting.
+
+Never finish substantial visual work without the available verification steps.
+
+### The five design systems (apply whenever relevant)
+| # | System | What it means here | Tool status (checked 2026-11-17) |
+|---|---|---|---|
+| 1 | **Taste — creative direction** | Clear visual hierarchy, distinctive premium concepts, elegant type, layout, spacing and composition. No generic "AI website" look. | No such skill installed. Apply as principles, or install a reviewed skill. |
+| 2 | **Impeccable — visual quality** | Review alignment, spacing, contrast and consistency. Remove clutter. Responsive + accessible (WCAG AA contrast, focus states, reduced motion). | No such skill installed. Apply as a manual checklist before reporting. |
+| 3 | **Awesome Design — references** | Consult strong design patterns and keep one VONUMO language. Never copy references blindly. | No such skill installed. Use owner references in `reference/` and `docs/`. |
+| 4 | **img2threejs — 3D reconstruction** | Rebuild suitable objects from references in Three.js with real materials, light and motion. Use real assets (GLB, HDRI, PBR) when procedural is not enough. | No skill of that name. The **`reanimate`** skill (`.claude/skills/reanimate`) covers reference capture, three.js/WebGL inspection and frame-by-frame verification. |
+| 5 | **Playwright — visual verification** | Open the running site, screenshot new/changed sections, compare with references, fix and retest. | ✅ Playwright 1.63 + Chromium installed. Scripts: `scripts/flythrough-shots.cjs`, `scripts/section-shots.cjs`. `reanimate` adds `compare.ts`/`sheet.ts`. |
+
+Re-check tool status at the start of a session if it matters, and update this table. **Never claim to have used a tool or skill that was not available.**
+
+### Photorealism standard
+- Prioritise realistic lighting, PBR textures, reflections and cinematic composition. Use Blender renders, HDRIs, image generation and video when available and appropriate (see `docs/integrations.md`).
+- **Never present a still image as an interactive 3D object.** Label concept work as such ("Konzeptstudie").
+- Mobile performance is part of quality: adaptive DPR, cheaper materials, restrained bloom.
+
+### Execution rules
+- These are standards, not a mandate to run every tool on every task. Use what the task needs.
+- Review third-party code (skills, scripts, packages) before installing or running it. Paid services (e.g. Figma AI credits) only with owner approval.
+- Never overwrite existing features or configuration. Keep `npm run lint` and `npm run build` green.
+- State verification limits plainly. In this cloud container WebGL is software-rendered (SwiftShader), so fps is not representative and iPhone is emulated at 1×.
+- Reply to the owner in the language they write in (German or Arabic). Site copy stays German.
 
 ## Role & bar
 We build premium, cinematic, highly interactive websites. Quality target = the owner's reference videos.
@@ -15,15 +56,15 @@ We build premium, cinematic, highly interactive websites. Quality target = the o
 - **Lenis** — the only smooth scroller, driven by `gsap.ticker` in `app/components/SmoothScroll.tsx`. Use `window.__lenis` / `scrollToId()`; never add a second scroll loop or native `scroll-behavior: smooth`.
 - **three + @react-three/fiber + drei** — one shared `<Canvas>` (`three/Stage.tsx`), content rendered via drei `<View>`. Do not mount extra Canvases.
 - **motion** — small UI state transitions only (menus, accordions, form states), not scroll choreography.
-- Fonts are local (Fontsource): Doto (dot‑matrix display) + Geist Mono. No Google Fonts requests.
+- Fonts are local (Fontsource): **Outfit** (UI + display, from the owner's mockups), Geist Mono (code only), Doto (legacy, loader). No Google Fonts requests.
 
 ## Visual language (current)
-- Dark techwear / HUD. Background `--color-ink #040406`, fine 96px/12px grid, scanline overlay (`.scan`).
+- Night studio / premium dark (owner mockups, Nov 2026): deep navy-black, warm wood light, blue/violet neon edges, glossy black V. Background `--color-ink #040406`, subtle 96px/12px grid. Scanline overlay removed for sharpness.
 - Accents: `a1 #4f6bff` (primary blue), `a2 #33e1ff` (cyan focus/hover), `a3 #ff4fa8`, `lime #c4ff3d`. Accents are light, not fill — use sparingly as rim lights, edges, focus.
 - Text: `fg #ecedf3`, `mute #7d7f8f`, `dim #4a4c58`. Labels 11px uppercase, tracking 0.12em.
-- Display type: `.dot` (Doto 900, uppercase, line-height .92). Body: Geist Mono 14px.
+- Display type: Outfit Light (300), tight tracking (−0.02 to −0.03em). `.dot` now maps to Outfit Light uppercase. Body: Outfit 15px.
 - Components: `.hud` panels (1px line border, blurred panel bg), `.brackets` corner ticks, `.btn` with bottom‑up fill on hover.
-- 3D: glossy dark physical material, blue key light + white fill, procedural studio env (`three/env.ts`, no HDR download).
+- 3D: glossy dark physical material, blue key light + warm fill, real HDRIs via `applyHdri` (procedural studio env as fallback).
 - Layout: max width 1400px, gutters 16px (mobile) / 24px (≥sm). No horizontal scroll at any width.
 
 ## Motion rules

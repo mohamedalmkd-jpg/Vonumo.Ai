@@ -9,3 +9,7 @@ next-env.d.ts
 
 # reference video frames
 /reference/frames/
+
+# reanimate: Vergleichsbelege und Skript-Abhängigkeiten
+/.reanimate/
+/.claude/skills/*/scripts/node_modules/
