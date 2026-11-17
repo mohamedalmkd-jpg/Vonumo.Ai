@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b2433"/><stop offset=".55" stop-color="#4c5a6c"/><stop offset="1" stop-color="#9aa6b2"/>
+    </linearGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9d2db"/><stop offset="1" stop-color="#7d8a98"/></linearGradient>
+    <linearGradient id="mid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6ebf0"/><stop offset="1" stop-color="#8f9caa"/></linearGradient>
+    <linearGradient id="near" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f4f6"/><stop offset="1" stop-color="#b9c2cc"/></linearGradient>
+    <linearGradient id="fog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#aeb8c3" stop-opacity="0"/><stop offset=".6" stop-color="#aeb8c3" stop-opacity=".7"/><stop offset="1" stop-color="#aeb8c3" stop-opacity="0"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcf8a"/><stop offset="1" stop-color="#f29a46"/></linearGradient>
+    <radialGradient id="spill" cx=".5" cy="0" r=".7"><stop offset="0" stop-color="#ffb867" stop-opacity=".55"/><stop offset="1" stop-color="#ffb867" stop-opacity="0"/></radialGradient>
+    <linearGradient id="timber" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1c1915"/><stop offset="1" stop-color="#2b251e"/></linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1118" stop-opacity="0"/><stop offset="1" stop-color="#0d1118" stop-opacity=".55"/></linearGradient>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .07 0"/></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <!-- ferne Gipfel -->
+  <path d="M0 560 L180 470 L300 510 L470 380 L560 430 L700 300 L820 400 L930 350 L1080 440 L1220 330 L1330 410 L1480 290 L1620 400 L1760 360 L1920 450 L1920 760 L0 760Z" fill="url(#far)" opacity=".75"/>
+  <!-- Schneegrate -->
+  <path d="M700 300 L740 360 L715 380 L760 420 M1480 290 L1520 350 L1500 375 L1550 410 M1220 330 L1250 380" stroke="#eef2f5" stroke-width="3" fill="none" opacity=".5"/>
+  <rect y="520" width="1920" height="260" fill="url(#fog)"/>
+  <!-- mittlere Kette -->
+  <path d="M0 700 L240 560 L380 620 L560 520 L760 640 L980 560 L1160 650 L1380 540 L1600 630 L1780 580 L1920 640 L1920 900 L0 900Z" fill="url(#mid)"/>
+  <path d="M560 520 L610 560 L590 580 M1380 540 L1430 580 L1410 600" stroke="#7d8a98" stroke-width="2" fill="none" opacity=".5"/>
+  <!-- Nadelwald, sparsam -->
+  <g fill="#3a4350" opacity=".55">
+    <path d="M300 790 l10 -40 l10 40z M330 795 l8 -30 l8 30z M1560 780 l11 -44 l11 44z M1590 790 l8 -30 l8 30z M1620 786 l9 -36 l9 36z M150 800 l9 -34 l9 34z"/>
+  </g>
+  <!-- Vorderhang -->
+  <path d="M0 840 C400 780 700 770 960 790 C1260 812 1560 770 1920 800 L1920 1080 L0 1080Z" fill="url(#near)"/>
+  <!-- Chalet -->
+  <g transform="translate(960 600)">
+    <ellipse cx="0" cy="268" rx="560" ry="60" fill="url(#spill)" filter="url(#soft)"/>
+    <!-- Sockel -->
+    <rect x="-330" y="200" width="660" height="60" fill="#3b3d42"/>
+    <rect x="-330" y="200" width="660" height="6" fill="#55585e"/>
+    <!-- Korpus -->
+    <polygon points="-300,200 -300,40 0,-150 300,40 300,200" fill="url(#timber)"/>
+    <!-- Glasgiebel -->
+    <polygon points="-240,200 -240,58 0,-90 240,58 240,200" fill="url(#glass)"/>
+    <!-- Pfosten -->
+    <g stroke="#1a1712" stroke-width="7">
+      <line x1="-120" y1="200" x2="-120" y2="-16"/><line x1="0" y1="200" x2="0" y2="-90"/><line x1="120" y1="200" x2="120" y2="-16"/>
+      <line x1="-240" y1="96" x2="240" y2="96"/>
+    </g>
+    <!-- Innenleben als Schattenformen -->
+    <rect x="-200" y="150" width="150" height="26" fill="#a85f2a" opacity=".55"/>
+    <rect x="40" y="132" width="60" height="68" fill="#b86a2e" opacity=".45"/>
+    <circle cx="-60" cy="40" r="22" fill="#fff1d6" opacity=".9"/>
+    <!-- Dach mit Schnee -->
+    <polygon points="-360,52 0,-176 360,52 340,64 0,-150 -340,64" fill="#16140f"/>
+    <polygon points="-366,48 0,-184 366,48 352,52 0,-168 -352,52" fill="#f4f6f8"/>
+    <!-- Balkon -->
+    <rect x="-300" y="96" width="60" height="4" fill="#16140f"/>
+    <rect x="240" y="96" width="60" height="4" fill="#16140f"/>
+  </g>
+  <!-- Lichtreflex im Schnee -->
+  <path d="M640 870 L1280 870 L1500 1080 L420 1080Z" fill="#ffc782" opacity=".08"/>
+  <rect width="1920" height="1080" fill="url(#shade)"/>
+  <rect width="1920" height="1080" filter="url(#grain)"/>
+</svg>
