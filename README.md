@@ -5,12 +5,8 @@ Website der Digitalagentur VONUMO – komplett neu gebaut: schneller, flüssiger
 ## Stack
 - **Next.js 16** (App Router, statisch vorgerendert) · **React 19** · **TypeScript**
 - **Tailwind CSS 4** – Design-Tokens in `app/globals.css`
-- **three.js + React Three Fiber + drei**: eine einzige WebGL-Leinwand für die ganze Seite.
-  Das aufgeblähte 3D-„V“ folgt der Maus und wandert beim Scrollen zwischen den Abschnitten (`app/components/three/HeroObject.tsx`, Zustände in `DESK`/`MOB`).
-  Die Leistungs-Karten zeichnen ihre Objekte per `View` in dieselbe Leinwand. Eigene Studio-Beleuchtung ohne HDR-Download (`three/env.ts`).
-- **GSAP** (ScrollTrigger, ScrambleText) für Scroll-Szenen und Text-Entschlüsselung, **Motion** für UI-Übergänge, **Lenis** für weiches Scrollen
-- Blitze (`Lightning.tsx`) als prozedurales SVG, eigener Fadenkreuz-Cursor, Ladebildschirm 000→100
-- Schriften: Doto (Punktmatrix) und Geist Mono
+- **Motion** für Animationen, **Lenis** für weiches Scrollen
+- **Eigener WebGL-Shader** im Hero (statt Three.js): wenige KB, pausiert außerhalb des Sichtfelds und im Hintergrund-Tab, reduzierte Auflösung auf Handys
 - **Zod** – dieselbe Validierung im Browser und auf dem Server
 - Schriften lokal (Fontsource) – keine Verbindung zu Google
 

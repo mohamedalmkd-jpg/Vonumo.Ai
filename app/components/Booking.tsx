@@ -44,22 +44,22 @@ export function Booking() {
     return () => window.removeEventListener("vonumo:plan", on);
   }, []);
 
-  const chip = (_on: boolean) => "chip";
+  const chip = (on: boolean) => `relative rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${on ? "border-a1 bg-a1/15 text-fg" : "border-line text-mute hover:border-white/20 hover:text-fg"}`;
 
   return (
-    <section id="termin" className="relative mx-auto max-w-[1400px] px-4 py-28 sm:px-6 sm:py-36">
+    <section id="termin" className="relative mx-auto max-w-6xl px-5 py-28 sm:px-6 sm:py-36">
       <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] [&>*]:min-w-0">
         <div>
-          <SectionHead index="06" label="Termin buchen" title="Kostenlose Beratung." sub="30 Minuten per Video oder Telefon. Wir bestätigen innerhalb von zwei Werktagen." />
-          <Reveal className="mt-8 space-y-2">
-            {["Unverbindlich & kostenlos", "Ehrliche Einschätzung zu Aufwand und Paket", "Keine Weitergabe Ihrer Daten"].map((t) => (
-              <p key={t} className="flex items-center gap-3 text-[11px] uppercase tracking-wide text-mute"><span className="h-1.5 w-1.5 bg-a2" />{t}</p>
+          <SectionHead kicker="Termin buchen" title={<>Kostenloses <span className="grad-text">Beratungsgespräch</span>.</>} sub="30 Minuten per Video oder Telefon. Wir melden uns innerhalb von zwei Werktagen mit einer Bestätigung." />
+          <Reveal className="mt-8 space-y-3 text-sm text-mute">
+            {["Unverbindlich & kostenlos", "Konkrete Einschätzung zu Aufwand und Paket", "Keine Weitergabe Ihrer Daten"].map((t) => (
+              <p key={t} className="flex items-center gap-3"><span className="grid h-6 w-6 place-items-center rounded-full bg-a2/15 text-a2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span>{t}</p>
             ))}
           </Reveal>
         </div>
 
         <Reveal className="min-w-0">
-          <div className="hud brackets relative p-5 sm:p-7">
+          <div className="glass relative rounded-3xl p-6 sm:p-8">
             <AnimatePresence mode="wait">
               {status.state === "ok" ? (
                 <Success key="ok" title="Anfrage gesendet!" text="Danke! Wir bestätigen Ihren Termin innerhalb von zwei Werktagen per E-Mail." onReset={() => setStatus({ state: "idle" })} />
@@ -71,8 +71,8 @@ export function Booking() {
                     if (ok) e.currentTarget?.reset?.();
                   }}>
                   <fieldset className="min-w-0">
-                    <legend className="label mb-2">Paket</legend>
-                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                    <legend className="mb-2 text-sm font-medium">Paket</legend>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                       {PLAN_OPTIONS.map((p) => (
                         <button key={p} type="button" aria-pressed={plan === p} onClick={() => setPlan(p)} className={chip(plan === p)}>{p}</button>
                       ))}
@@ -80,25 +80,25 @@ export function Booking() {
                   </fieldset>
 
                   <fieldset className="min-w-0">
-                    <legend className="label mb-2">Wunschtermin</legend>
-                    {days.length === 0 && <div className="h-[76px] animate-pulse bg-white/[0.03]" />}
+                    <legend className="mb-2 text-sm font-medium">Wunschtermin</legend>
+                    {days.length === 0 && <div className="h-[76px] animate-pulse rounded-2xl bg-white/[0.03]" />}
                     <div className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-2 [scrollbar-width:none]" data-lenis-prevent>
                       {days.map((d) => (
                         <button key={d.iso} type="button" aria-pressed={date === d.iso} aria-label={`${d.wd} ${d.d}. ${d.m}`} onClick={() => setDate(d.iso)}
-                          className={`flex w-16 shrink-0 snap-start flex-col items-center border py-2.5 transition-colors ${date === d.iso ? "border-fg bg-fg text-ink" : "border-line hover:border-line-2"}`}>
-                          <span className="text-[10px] uppercase opacity-60">{d.wd}</span>
-                          <span className="dot text-2xl">{d.d}</span>
-                          <span className="text-[10px] uppercase opacity-60">{d.m}</span>
+                          className={`flex w-16 shrink-0 snap-start flex-col items-center rounded-2xl border py-2.5 transition-colors ${date === d.iso ? "border-a1 bg-a1/15" : "border-line hover:border-white/20"}`}>
+                          <span className="text-[11px] uppercase text-mute">{d.wd}</span>
+                          <span className="text-xl font-bold">{d.d}</span>
+                          <span className="text-[11px] text-mute">{d.m}</span>
                         </button>
                       ))}
                     </div>
-                    {errors.date && <span className="mt-1 block text-[11px] uppercase text-[#ff5d5d]">{errors.date}</span>}
-                    <div className="mt-2 grid grid-cols-3 gap-1.5 sm:grid-cols-6">
-                      {TIMES.map((t) => <button key={t} type="button" aria-pressed={time === t} onClick={() => setTime(t)} className={chip(time === t)}>{t}</button>)}
+                    {errors.date && <span className="mt-1 block text-xs text-red-400">{errors.date}</span>}
+                    <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
+                      {TIMES.map((t) => <button key={t} type="button" aria-pressed={time === t} onClick={() => setTime(t)} className={`${chip(time === t)} font-mono`}>{t}</button>)}
                     </div>
                   </fieldset>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Name" name="bk-name" error={errors.name}><input id="bk-name" name="name" autoComplete="name" maxLength={120} className="field" aria-invalid={!!errors.name} /></Field>
                     <Field label="E-Mail" name="bk-email" error={errors.email}><input id="bk-email" name="email" type="email" autoComplete="email" maxLength={254} className="field" aria-invalid={!!errors.email} /></Field>
                     <Field label="Telefon" name="bk-phone" optional error={errors.phone}><input id="bk-phone" name="phone" type="tel" autoComplete="tel" maxLength={40} className="field" /></Field>
@@ -107,7 +107,7 @@ export function Booking() {
                   <Honeypot />
                   <Consent error={errors.consent} />
                   <StatusLine status={status} />
-                  <SubmitButton status={status}>Termin anfragen →</SubmitButton>
+                  <SubmitButton status={status}>Termin anfragen</SubmitButton>
                 </motion.form>
               )}
             </AnimatePresence>
