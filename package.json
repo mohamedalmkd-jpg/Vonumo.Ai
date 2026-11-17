@@ -13,6 +13,7 @@
     "qa:lighthouse": "node scripts/lighthouse.mjs",
     "qa:lighthouse:mobile": "node scripts/lighthouse.mjs --mobile",
     "qa:visual": "node scripts/visual-regression.mjs",
+    "qa:hero": "node scripts/check-hero-ready.cjs",
     "qa:visual:update": "node scripts/visual-regression.mjs --update"
   },
   "engines": {
