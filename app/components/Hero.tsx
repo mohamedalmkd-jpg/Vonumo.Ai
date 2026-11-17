@@ -94,7 +94,9 @@ export function Hero() {
 
     const poster = el.querySelector<HTMLElement>("[data-hero-poster]");
     const hidePoster = () => { if (poster) poster.style.opacity = "0"; };
-    window.addEventListener("vonumo:hero-ready", hidePoster, { once: true });
+    // The WebGL view can become ready before this effect subscribes.
+    if ((window as unknown as { __vonumoHeroReady?: boolean }).__vonumoHeroReady) hidePoster();
+    else window.addEventListener("vonumo:hero-ready", hidePoster, { once: true });
     const st = ScrollTrigger.create({ trigger: el, start: "top top", end: "bottom bottom", onUpdate: (s) => sync(s.progress) });
     const vis = ScrollTrigger.create({ trigger: el, start: "top bottom", end: "bottom top", onToggle: (s) => (flight.visible = s.isActive) });
     flight.visible = vis.isActive || window.scrollY < el.offsetHeight;
@@ -131,6 +133,7 @@ export function Hero() {
       window.removeEventListener("touchstart", t0);
       window.removeEventListener("touchend", t1);
       window.removeEventListener("vonumo:loaded", onLoaded);
+      window.removeEventListener("vonumo:hero-ready", hidePoster);
       delete root.dataset.immersive;
       st.kill(); vis.kill();
     };
