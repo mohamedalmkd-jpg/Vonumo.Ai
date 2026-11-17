@@ -6,7 +6,7 @@ import { useGSAP } from "@gsap/react";
 import { Scramble } from "./Scramble";
 import { FlightScene, DetailObject } from "./three";
 import { CHAPTERS, flight } from "./three/flight";
-import { CARDS } from "@/lib/content";
+import { DISCIPLINES } from "@/lib/content";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -188,7 +188,7 @@ export function Hero() {
           </div>
           <div data-up className="absolute bottom-6 right-4 text-right sm:right-6">
             <ul className="hidden space-y-1 text-[11px] uppercase tracking-[0.14em] text-fg/80 sm:block">
-              {CARDS.map((c) => <li key={c.title}>{c.title}</li>)}
+              {DISCIPLINES.map((d) => <li key={d.key}>{d.title}</li>)}
             </ul>
             <a href="#termin" className="btn btn-solid pointer-events-auto mt-4 !py-2" data-scramble-host><Scramble text="Projekt starten" hover onView={false} /><span aria-hidden="true">→</span></a>
           </div>

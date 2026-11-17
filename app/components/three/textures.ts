@@ -55,7 +55,7 @@ export function makeGrid() {
   return t;
 }
 
-export type ScreenKind = "ui" | "web" | "brand" | "3d";
+export type ScreenKind = "ui" | "web" | "brand" | "3d" | "code";
 const A1 = "#4f6bff", A2 = "#33e1ff", A3 = "#ff4fa8", LIME = "#c4ff3d", FG = "#ecedf3", MUTE = "#7d7f8f";
 
 function chrome(x: CanvasRenderingContext2D, w: number, h: number, label: string) {
@@ -110,6 +110,28 @@ function draw(kind: ScreenKind, x: CanvasRenderingContext2D, w: number, h: numbe
     ["#4F6BFF", "#33E1FF", "#FF4FA8", "#C4FF3D", "#ECEDF3"].forEach((hx, i) => x.fillText(hx, 560 + (i % 3) * 140, 260 + Math.floor(i / 3) * 170));
     x.strokeStyle = "rgba(255,255,255,0.2)"; x.strokeRect(560, 470, 400, 120);
     x.fillStyle = FG; x.font = mono(300, 22); x.fillText("Logo · Farbe · Typo", 584, 540);
+  } else if (kind === "code") {
+    chrome(x, w, h, "vonumo / app/page.tsx");
+    x.fillStyle = "#0b0c13"; x.fillRect(0, 44, 210, h - 44);
+    ["app", "  page.tsx", "  layout.tsx", "components", "  Hero.tsx", "  Showroom.tsx", "lib", "  content.ts"].forEach((f, i) => { x.fillStyle = i === 1 ? FG : MUTE; x.font = mono(400, 15); x.fillText(f, 22, 84 + i * 30); });
+    const code: [string, string][][] = [
+      [["#ff4fa8", "export default "], ["#33e1ff", "function "], ["#ecedf3", "Home() {"]],
+      [["#ff4fa8", "  return "], ["#7d7f8f", "("]],
+      [["#7d7f8f", "    <"], ["#33e1ff", "Hero "], ["#c4ff3d", "scene"], ["#7d7f8f", "="], ["#ffb547", "\"studio\""], ["#7d7f8f", " />"]],
+      [["#7d7f8f", "    <"], ["#33e1ff", "Showroom "], ["#c4ff3d", "work"], ["#7d7f8f", "={"], ["#ecedf3", "WORK"], ["#7d7f8f", "} />"]],
+      [["#7d7f8f", "    <"], ["#33e1ff", "Services "], ["#c4ff3d", "fps"], ["#7d7f8f", "={"], ["#ffb547", "60"], ["#7d7f8f", "} />"]],
+      [["#7d7f8f", "    <"], ["#33e1ff", "Contact "], ["#c4ff3d", "dsgvo "], ["#7d7f8f", "/>"]],
+      [["#7d7f8f", "  );"]],
+      [["#ecedf3", "}"]],
+      [],
+      [["#4a4c58", "// ✓ build 1,2 s · lighthouse 98 · edge: fra1"]],
+    ];
+    code.forEach((line, li) => {
+      let cx = 280; x.font = mono(400, 21);
+      x.fillStyle = "#4a4c58"; x.fillText(String(li + 1).padStart(2, "0"), 236, 100 + li * 40);
+      line.forEach(([col, t]) => { x.fillStyle = col; x.fillText(t, cx, 100 + li * 40); cx += x.measureText(t).width; });
+    });
+    x.fillStyle = LIME; x.fillRect(240, h - 76, 260, 40); x.fillStyle = "#07080d"; x.font = mono(600, 16); x.fillText("✓ ERFOLGREICH · LIVE", 258, h - 50);
   } else {
     chrome(x, w, h, "webgl / scene.glb");
     x.fillStyle = "#05060a"; x.fillRect(20, 60, w - 40, h - 80);

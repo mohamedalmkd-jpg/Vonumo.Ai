@@ -13,7 +13,7 @@ export function Contact() {
     <section id="kontakt" className="relative mx-auto max-w-[1400px] px-4 py-28 sm:px-6 sm:py-36">
       <div className="grid gap-10 lg:grid-cols-2 [&>*]:min-w-0">
         <div>
-          <SectionHead index="09" label="Kontakt" title="Wie können wir helfen?" sub="Schreiben Sie uns – wir antworten innerhalb von zwei Werktagen." />
+          <SectionHead index="10" label="Kontakt" title="Wie können wir helfen?" sub="Schreiben Sie uns – wir antworten innerhalb von zwei Werktagen." />
           <Reveal className="mt-10 grid gap-2">
             {[{ i: "mail", l: "E-Mail", v: CONTACT.email, h: `mailto:${CONTACT.email}` }, { i: "phone", l: "Telefon", v: CONTACT.phone, h: CONTACT.phoneHref }].map((c) => (
               <a key={c.l} href={c.h} className="hud brackets group flex items-center gap-4 p-4">

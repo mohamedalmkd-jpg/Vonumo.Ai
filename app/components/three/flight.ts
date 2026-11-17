@@ -23,3 +23,6 @@ export const MOVES = [
   { from: 0.06, to: 0.3 },
   { from: 0.52, to: 0.82 },
 ] as const;
+
+/** Aktive Disziplin im Leistungsbereich (DOM schreibt, ServicesObject liest). */
+export const services = { active: 0 };

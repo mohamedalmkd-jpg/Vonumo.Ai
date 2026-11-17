@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  body { background: #06070f; color: #eef0ff; font-family: "Inter Display", "Inter", sans-serif; }
+  .orb { position: absolute; border-radius: 50%; filter: blur(60px); }
+  .o1 { width: 720px; height: 520px; left: 50%; top: 210px; transform: translateX(-50%); background: radial-gradient(circle at 40% 40%, #6d5bff, transparent 65%); opacity: .55; }
+  .o2 { width: 480px; height: 420px; left: 58%; top: 300px; background: radial-gradient(circle, #19d3c5, transparent 65%); opacity: .35; }
+  .o3 { width: 420px; height: 380px; left: 22%; top: 330px; background: radial-gradient(circle, #ff5fb0, transparent 65%); opacity: .22; }
+  nav { position: relative; display: flex; justify-content: space-between; align-items: center; padding: 28px 64px; font-size: 15px; color: #a6abcf; }
+  .logo { color: #fff; font-weight: 600; font-size: 22px; display: flex; gap: 10px; align-items: center; letter-spacing: -.02em; }
+  .logo i { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg, #8f7dff, #19d3c5); }
+  nav ul { display: flex; gap: 34px; list-style: none; }
+  .btn { background: #fff; color: #06070f; border-radius: 10px; padding: 11px 18px; font-weight: 600; }
+  header { position: relative; text-align: center; padding-top: 44px; }
+  .badge { display: inline-flex; gap: 10px; align-items: center; border: 1px solid #2a2e52; background: rgba(20,22,45,.6); border-radius: 99px; padding: 7px 16px 7px 8px; font-size: 14px; color: #c3c7ea; }
+  .badge b { background: linear-gradient(135deg, #8f7dff, #19d3c5); color: #06070f; border-radius: 99px; padding: 3px 10px; font-size: 12px; }
+  h1 { font-size: 104px; line-height: .95; letter-spacing: -.05em; font-weight: 600; margin-top: 26px; }
+  h1 span { background: linear-gradient(90deg, #b4a9ff, #5ef0e1); -webkit-background-clip: text; color: transparent; }
+  .sub { font-size: 20px; color: #a6abcf; margin: 22px auto 0; max-width: 620px; line-height: 1.5; }
+  .ctas { display: flex; gap: 12px; justify-content: center; margin-top: 30px; font-weight: 600; font-size: 16px; }
+  .ctas span { padding: 15px 24px; border-radius: 12px; } .ctas .a { background: #fff; color: #06070f; } .ctas .b { border: 1px solid #2f3358; color: #eef0ff; }
+  .app { position: relative; width: 1180px; height: 420px; margin: 48px auto 0; border: 1px solid #262a4a; border-radius: 18px 18px 0 0; background: rgba(12,14,30,.85); display: grid; grid-template-columns: 240px 1fr 300px; overflow: hidden; box-shadow: 0 -20px 80px -20px rgba(109,91,255,.4); }
+  .side { border-right: 1px solid #1f2340; padding: 20px 16px; font-size: 14px; color: #8b90b8; }
+  .side p { padding: 9px 12px; border-radius: 8px; } .side p.on { background: #1a1e3a; color: #fff; }
+  .side small { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #565b85; margin: 16px 12px 6px; }
+  .chat { padding: 26px 34px; display: flex; flex-direction: column; gap: 16px; font-size: 15px; line-height: 1.5; }
+  .u { align-self: flex-end; background: #2a2f5c; border-radius: 14px 14px 4px 14px; padding: 12px 16px; max-width: 70%; }
+  .a { display: flex; gap: 12px; } .a i { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #8f7dff, #19d3c5); flex: none; }
+  .a div { color: #d3d6f2; }
+  table { margin-top: 12px; border-collapse: collapse; font-size: 13px; width: 100%; }
+  td { border-top: 1px solid #23274a; padding: 8px 10px 8px 0; color: #a6abcf; } td b { color: #fff; font-weight: 500; } .up { color: #5ef0e1; }
+  .tasks { border-left: 1px solid #1f2340; padding: 20px; font-size: 13px; color: #8b90b8; }
+  .tasks h4 { color: #fff; font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .t { border: 1px solid #23274a; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .t b { display: block; color: #e4e6fa; font-weight: 500; margin-bottom: 6px; }
+  .bar { height: 5px; border-radius: 9px; background: #1d2140; margin-top: 8px; } .bar i { display: block; height: 100%; border-radius: 9px; background: linear-gradient(90deg, #8f7dff, #19d3c5); }
+  @media (max-width: 600px) {
+    nav { padding: 22px; } nav ul { display: none; } header { padding: 24px 22px 0; }
+    h1 { font-size: 58px; } .sub { font-size: 16px; } .ctas { flex-direction: column; } .ctas span { text-align: center; }
+    .app { width: auto; margin: 30px 16px 0; height: 330px; grid-template-columns: 1fr; } .side, .tasks { display: none; } .chat { padding: 18px; font-size: 14px; }
+    .o1 { width: 420px; left: 50%; } .o2, .o3 { display: none; }
+  }
+</style></head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+<nav><span class="logo"><i></i>Pilot</span><ul><li>Produkt</li><li>Agenten</li><li>Sicherheit</li><li>Preise</li></ul><span class="btn">Demo buchen</span></nav>
+<header>
+  <span class="badge"><b>Neu</b> Pilot 2.0 · Agenten für Vertrieb &amp; Support</span>
+  <h1>Ihr Team.<br><span>Mit Autopilot.</span></h1>
+  <p class="sub">Ein KI-Assistent, der Ihre Daten kennt, Anfragen beantwortet und Routinearbeit erledigt – DSGVO-konform, in der EU gehostet.</p>
+  <div class="ctas"><span class="a">Kostenlos testen</span><span class="b">Live-Demo ansehen</span></div>
+</header>
+<div class="app">
+  <div class="side"><small>Arbeitsbereich</small><p class="on">Assistent</p><p>Posteingang</p><p>Wissensbasis</p><p>Automationen</p><small>Agenten</small><p>Vertrieb</p><p>Support</p><p>Buchhaltung</p></div>
+  <div class="chat">
+    <div class="u">Fasse die Support-Tickets dieser Woche zusammen und schlage Antworten vor.</div>
+    <div class="a"><i></i><div>Diese Woche gab es <b>148 Tickets</b> – 31 % weniger Bearbeitungszeit als in der Vorwoche. Die drei häufigsten Themen:
+      <table><tr><td><b>Lieferstatus</b></td><td>52 Tickets</td><td class="up">Antwort-Vorlage bereit</td></tr><tr><td><b>Rechnungskopie</b></td><td>37 Tickets</td><td class="up">automatisch erledigt</td></tr><tr><td><b>Rückgabe</b></td><td>21 Tickets</td><td>Freigabe nötig</td></tr></table>
+    </div></div>
+  </div>
+  <div class="tasks"><h4>Laufende Aufgaben</h4>
+    <div class="t"><b>Angebote nachfassen</b>12 von 18 versendet<div class="bar"><i style="width:66%"></i></div></div>
+    <div class="t"><b>Rechnungen abgleichen</b>März · 214 Belege<div class="bar"><i style="width:88%"></i></div></div>
+    <div class="t"><b>FAQ aktualisieren</b>Wartet auf Freigabe<div class="bar"><i style="width:40%"></i></div></div>
+  </div>
+</div>
+</body></html>

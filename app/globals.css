@@ -91,6 +91,17 @@
 }
 
 @keyframes blink { 50% { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+
+/* Showroom bei „reduzierte Bewegung“: Projekte untereinander statt gepinnter Bildfolge */
+.showroom[data-static] { height: auto !important; }
+.showroom[data-static] > .stage { position: relative; height: auto; overflow: visible; }
+.showroom[data-static] [data-intro] { position: relative; min-height: 70svh; }
+.showroom[data-static] [data-frame] { position: relative; height: 100svh; }
+.showroom[data-static] .counter { display: none; }
+.showroom[data-static] [data-shell] { transform: translate(0, -9.5%) scale(.66); border-radius: 18px; }
+.showroom[data-static] [data-grad] { opacity: 0; }
+@media (min-width: 768px) { .showroom[data-static] [data-shell] { transform: translate(14%, -9%) scale(.66); border-radius: 22px; } }
 @keyframes marquee { to { transform: translateX(-50%); } }
 
 @media (prefers-reduced-motion: reduce) {

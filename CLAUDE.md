@@ -47,9 +47,24 @@ We build premium, cinematic, highly interactive websites. Quality target = the o
 - Adjust framing via keyframes in `FlightScene.tsx`, timing via `CHAPTERS`/`MOVES` in `flight.ts`, and snap targets via `REST_FWD`/`REST_BACK` in `Hero.tsx`.
 - **Never** give the sticky hero stage an opaque background: the WebGL canvas sits *behind* `<main>`.
 
+## Showroom & services (sections 2–3)
+- **Showroom** (`Showroom.tsx`, `#arbeiten`) is a sticky stage with one scrubbed GSAP timeline.
+  - Intro: the first project grows from a small clip window over the oversized "Arbeiten, die bleiben." type.
+  - Each project bursts in full-bleed (clip from below, scale 1.25→1), then **settles** into a framed screen (`SETTLE` pose). Its title rises through masks and the phone mockup floats with its own parallax.
+  - The previous project sinks and darkens underneath.
+  - Snap via `lenisSnap.ts` (shared helper: one gesture = one scene).
+  - Reduced motion: `data-static` stacks the projects in the framed pose (CSS in `globals.css`).
+- **Projects are concept studies, not client work.** Always label them "Konzeptstudie". Data lives in `WORK` (`lib/content.ts`).
+  - Images: `public/work/*.webp`, rendered from `scripts/mockups/*.html` with `node scripts/render-mockups.cjs`. Fonts come from `@fontsource*` devDependencies and are only used for rendering.
+  - To add real client work, drop desktop (1600×1000) and mobile (430×932) images into `public/work/` and add an entry to `WORK`.
+- **Services** (`Services.tsx`, `#leistungen`) is a sticky stage with five `DISCIPLINES`. Scroll or click selects one.
+  - `three/ServicesObject.tsx` shows a floating laptop and phone. Screens switch with a wipe shader (cyan scanline) and the devices turn into a new pose per discipline.
+  - Do not put CSS `transition` on an element that GSAP transforms: wrap it instead, otherwise the mask reveal stalls.
+- **Hero wordmark:** the giant "VONUMO" is a plane in the 3D landscape (`Studio.tsx` → `Wordmark`), so it gets real parallax and fog.
+
 ## Verification workflow
 1. `npm run lint` (tsc) and `npm run build` must pass.
-2. `npx next start -p 3100`, then `node scripts/flythrough-shots.cjs <out> [desktop|iphone]`. Playwright Chromium with SwiftShader software GL: expect ~1 fps at 1440×900, so wait for the camera damping to settle before trusting a frame. Emulate iPhone at `deviceScaleFactor: 1`, because software GL at 3× is too slow for the loader. Close each browser context before opening the next. Software fps numbers are not real-device performance.
+2. `npx next start -p 3100`, then `node scripts/flythrough-shots.cjs <out> [desktop|iphone]`, or `node scripts/section-shots.cjs <out> <desktop|iphone> <id:p1,p2> …` for any pinned section. Snap moves jumped-to positions to the next rest point, which is expected. Playwright Chromium with SwiftShader software GL: expect ~1 fps at 1440×900, so wait for the camera damping to settle before trusting a frame. Emulate iPhone at `deviceScaleFactor: 1`, because software GL at 3× is too slow for the loader. Close each browser context before opening the next. Software fps numbers are not real-device performance.
 3. Compare side‑by‑side with reference frames; list mismatches; fix; repeat.
 4. Check console errors, horizontal overflow, and frame time.
 

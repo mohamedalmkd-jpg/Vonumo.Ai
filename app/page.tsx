@@ -3,6 +3,7 @@ import { Hero } from "./components/Hero";
 import { Marquee } from "./components/Marquee";
 import { Details } from "./components/Details";
 import { Services } from "./components/Services";
+import { Showroom } from "./components/Showroom";
 import { Layers } from "./components/Layers";
 import { Terminal } from "./components/Terminal";
 import { Pricing } from "./components/Pricing";
@@ -21,9 +22,10 @@ export default function Home() {
       <Nav />
       <main id="main" className="relative z-10 overflow-x-clip">
         <Hero />
+        <Showroom />
+        <Services />
         <Marquee />
         <Details />
-        <Services />
         <Layers />
         <Terminal />
         <Pricing />

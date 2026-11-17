@@ -5,6 +5,7 @@ export const CONTACT = {
 };
 
 export const NAV = [
+  { href: "#arbeiten", label: "Arbeiten" },
   { href: "#leistungen", label: "Leistungen" },
   { href: "#ebenen", label: "Technologie" },
   { href: "#preise", label: "Preise" },
@@ -75,3 +76,23 @@ export const STEPS = [
 ] as const;
 
 export const STACK = ["Next.js", "React", "TypeScript", "WebGL / GLSL", "Motion", "Tailwind CSS", "Vercel", "GitHub"] as const;
+
+/**
+ * Showroom: Designstudien aus dem VONUMO-Studio (keine Kundenprojekte – so auch auf der Seite gekennzeichnet).
+ * Bilder entstehen aus scripts/mockups/*.html über scripts/render-mockups.cjs.
+ */
+export const WORK = [
+  { slug: "aera", name: "ÆRA", kind: "Uhrenmanufaktur", headline: "Zeit, präzise geformt.", text: "Ein ruhiger, dunkler Shop für Luxusuhren: große Serifen, viel Raum und Produktbilder, die wie im Schaufenster wirken.", services: ["Webdesign", "E-Commerce", "Art Direction"], accent: "#d8c3a0" },
+  { slug: "kora", name: "Kōra", kind: "Gesundheits-App", headline: "Dein Körper. Klar erklärt.", text: "Daten von Uhr, Ring und Waage in einer Oberfläche, die man in drei Sekunden versteht – App-Design und Website aus einem System.", services: ["UI/UX-Design", "Designsystem", "Website"], accent: "#ff6b3d" },
+  { slug: "mythos", name: "Mythos", kind: "Kaffeerösterei", headline: "Geröstet für den Moment.", text: "Marke, Verpackung und Shop mit Abo-Funktion – warm, handwerklich und schnell genug für den Kauf am Handy.", services: ["Branding", "Webdesign", "Shop & Abo"], accent: "#b5532d" },
+  { slug: "pilot", name: "Pilot", kind: "KI-Software", headline: "Ihr Team. Mit Autopilot.", text: "Landingpage und Produktoberfläche für einen KI-Assistenten – erklärt komplexe Technik in einem Satz und einer Demo.", services: ["KI-Integration", "Produktdesign", "Entwicklung"], accent: "#8f7dff" },
+] as const;
+
+/** Die fünf Disziplinen des interaktiven Leistungsbereichs. Preise wie in PLANS/CARDS. */
+export const DISCIPLINES = [
+  { key: "design", title: "Webdesign", tag: "Art Direction · Konzept", from: "in jedem Paket ab 49 €/Monat", text: "Gestaltung, die Ihre Marke unverwechselbar macht: Typografie, Bildsprache und Bewegung aus einem Guss – kein Baukasten, kein Template.", points: ["Individuelles Design", "Motion & Micro-Interaktionen", "Responsive bis 390 px"] },
+  { key: "dev", title: "Entwicklung", tag: "Next.js · React · Edge", from: "in jedem Paket ab 49 €/Monat", text: "Schneller, sauberer Code mit Next.js und TypeScript. Ziel: Lighthouse 90+, ausgeliefert über ein weltweites Edge-Netzwerk.", points: ["Lighthouse 90+", "DSGVO & Sicherheit", "Code gehört Ihnen"] },
+  { key: "ux", title: "UI/UX-Design", tag: "Figma · Designsystem", from: "ab 49 €", text: "Oberflächen und Nutzerführung, die Besucher zu Kunden machen – getestet auf jedem Gerät, dokumentiert als Designsystem.", points: ["Nutzerführung", "Prototypen in Figma", "Designsystem"] },
+  { key: "3d", title: "3D-Websites", tag: "WebGL · Three.js", from: "ab 49 €", text: "Echte 3D-Szenen und Kamerafahrten, flüssig bis aufs Smartphone. Ihre Produkte zum Drehen, Ihre Marke zum Betreten.", points: ["Echtzeit-3D", "Scroll-Kamerafahrten", "Mobil optimiert"] },
+  { key: "ai", title: "KI-Lösungen", tag: "Assistent · Automatik", from: "ab 199 €", text: "Chatbots, Assistenten und Automationen, die Ihre Abläufe kennen und Ihrem Team jeden Tag Zeit schenken – DSGVO-konform.", points: ["KI-Assistent", "Automatisierung", "EU-Hosting"] },
+] as const;

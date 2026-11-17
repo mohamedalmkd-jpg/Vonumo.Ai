@@ -39,3 +39,15 @@ Findings to address while rebuilding:
 
 ## 5. Then continue section by section
 Same loop for each later section. Keep all forms, the API, legal pages and redirects intact. Re-run lint, build and screenshots after every section.
+
+## 6. Agency transformation (pass 2)
+Done and visually tested (desktop 1440×900, iPhone 15 layout at 1×, reduced motion):
+- Showroom `#arbeiten` with 4 concept studies (ÆRA, Kōra, Mythos, Pilot): cinematic burst → framed settle, masked titles, floating phone mockups, snap.
+- Services `#leistungen` with 5 disciplines and an R3F device stage (laptop + phone, wipe-shader screens).
+- Hero: 3D wordmark in the landscape.
+- Nav: "Arbeiten" link. Section numbering updated. Old 4-card services and `CardObject` removed.
+
+Next passes (not yet done):
+- Details / Layers / Terminal / Pricing / Steps / FAQ / Contact: replace scramble-only headings with masked line reveals. Give section seams continuity (shared background light that travels, colour hand-off).
+- Real client projects in `WORK` once available. Optional photographic assets (e.g. via an image generator, with the owner's approval).
+- Real-device performance profiling (iPhone Safari, mid-range Android).

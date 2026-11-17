@@ -50,7 +50,7 @@ export function Booking() {
     <section id="termin" className="relative mx-auto max-w-[1400px] px-4 py-28 sm:px-6 sm:py-36">
       <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] [&>*]:min-w-0">
         <div>
-          <SectionHead index="06" label="Termin buchen" title="Kostenlose Beratung." sub="30 Minuten per Video oder Telefon. Wir bestätigen innerhalb von zwei Werktagen." />
+          <SectionHead index="07" label="Termin buchen" title="Kostenlose Beratung." sub="30 Minuten per Video oder Telefon. Wir bestätigen innerhalb von zwei Werktagen." />
           <Reveal className="mt-8 space-y-2">
             {["Unverbindlich & kostenlos", "Ehrliche Einschätzung zu Aufwand und Paket", "Keine Weitergabe Ihrer Daten"].map((t) => (
               <p key={t} className="flex items-center gap-3 text-[11px] uppercase tracking-wide text-mute"><span className="h-1.5 w-1.5 bg-a2" />{t}</p>

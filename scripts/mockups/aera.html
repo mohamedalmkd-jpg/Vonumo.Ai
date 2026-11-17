@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  body { background: radial-gradient(80% 90% at 72% 45%, #23201b 0%, #0d0c0b 60%); color: #efe6d6; font-family: "Fraunces", serif; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 34px 64px; font: 400 13px/1 "Inter", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #bfb39e; }
+  .logo { font: 500 26px/1 "Fraunces"; letter-spacing: .42em; color: #efe6d6; }
+  nav ul { display: flex; gap: 42px; list-style: none; }
+  .hero { display: grid; grid-template-columns: 1fr 1fr; align-items: center; padding: 0 64px; height: calc(100% - 210px); }
+  .eyebrow { font: 500 12px "Inter"; letter-spacing: .3em; text-transform: uppercase; color: #c9a86a; }
+  h1 { font-weight: 300; font-size: 112px; line-height: .95; letter-spacing: -.035em; margin-top: 28px; font-variation-settings: "opsz" 144; }
+  h1 em { font-style: italic; font-weight: 300; color: #d8c3a0; }
+  .sub { font: 400 17px/1.6 "Inter"; color: #a49985; max-width: 420px; margin-top: 30px; }
+  .ctas { display: flex; gap: 14px; margin-top: 40px; font: 500 13px "Inter"; letter-spacing: .14em; text-transform: uppercase; }
+  .b1 { background: #d8c3a0; color: #14120f; padding: 18px 30px; }
+  .b2 { border: 1px solid #5a5244; padding: 17px 30px; color: #efe6d6; }
+  .art { position: relative; display: grid; place-items: center; }
+  .halo { position: absolute; width: 640px; height: 640px; border-radius: 50%; background: radial-gradient(circle, rgba(201,168,106,.22), transparent 62%); }
+  .spec { position: absolute; right: 0; bottom: 30px; text-align: right; font: 400 13px/1.9 "Inter"; color: #8e846f; letter-spacing: .06em; }
+  .spec b { display: block; font: 300 34px "Fraunces"; color: #efe6d6; letter-spacing: 0; }
+  footer { position: absolute; left: 64px; right: 64px; bottom: 0; height: 120px; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #2c2822; font: 400 13px "Inter"; color: #8e846f; }
+  footer div { padding: 26px 0; display: flex; gap: 16px; align-items: center; }
+  footer i { width: 54px; height: 54px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #e9dcc3, #6d5f48 60%, #2a241c); flex: none; }
+  footer i.g { background: radial-gradient(circle at 35% 30%, #9bb3a2, #1f3a2c 60%, #0b1610); }
+  footer i.b { background: radial-gradient(circle at 35% 30%, #a8b6d4, #1d2a4a 60%, #0a0f1d); }
+  footer i.s { background: radial-gradient(circle at 35% 30%, #f3f3f3, #8e8e8e 60%, #333); }
+  footer b { display: block; color: #efe6d6; font: 400 17px "Fraunces"; }
+  @media (max-width: 600px) {
+    nav { padding: 26px 24px; } nav ul { display: none; } .logo { font-size: 20px; }
+    .hero { grid-template-columns: 1fr; padding: 0 24px; height: auto; }
+    h1 { font-size: 62px; margin-top: 18px; } .sub { font-size: 15px; margin-top: 20px; }
+    .ctas { flex-direction: column; margin-top: 26px; } .ctas a { text-align: center; }
+    .art { order: -1; height: 420px; margin-top: -10px; } .art svg { width: 380px; height: 380px; } .halo { width: 420px; height: 420px; }
+    .spec, footer { display: none; }
+  }
+</style></head>
+<body>
+<nav><span class="logo">ÆRA</span><ul><li>Kollektion</li><li>Manufaktur</li><li>Journal</li><li>Boutiquen</li></ul><span>Warenkorb (0)</span></nav>
+<section class="hero">
+  <div>
+    <p class="eyebrow">Neu · Referenz 1906</p>
+    <h1>Zeit,<br><em>präzise</em><br>geformt.</h1>
+    <p class="sub">Handaufgezogene Automatikwerke, gefertigt in kleinen Serien. Jede Uhr wird von einer Uhrmacherin von Anfang bis Ende montiert.</p>
+    <div class="ctas"><a class="b1">Kollektion entdecken</a><a class="b2">Termin in der Boutique</a></div>
+  </div>
+  <div class="art">
+    <div class="halo"></div>
+    <svg width="600" height="600" viewBox="-300 -300 600 600">
+      <defs>
+        <linearGradient id="strap" x1="0" x2="1"><stop offset="0" stop-color="#1b1310"/><stop offset=".5" stop-color="#4a3022"/><stop offset="1" stop-color="#1b1310"/></linearGradient>
+        <linearGradient id="case" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff6e3"/><stop offset=".35" stop-color="#c7a874"/><stop offset=".6" stop-color="#6c5634"/><stop offset=".85" stop-color="#e8d2a6"/><stop offset="1" stop-color="#5a4628"/></linearGradient>
+        <radialGradient id="dial" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#2f5a45"/><stop offset=".55" stop-color="#143224"/><stop offset="1" stop-color="#06120c"/></radialGradient>
+        <radialGradient id="glass" cx=".3" cy=".2" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+        <filter id="sh" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="30" stdDeviation="30" flood-color="#000" flood-opacity=".7"/></filter>
+      </defs>
+      <path d="M-74,-300 L74,-300 L86,-170 L-86,-170Z" fill="url(#strap)"/>
+      <path d="M-86,170 L86,170 L74,300 L-74,300Z" fill="url(#strap)"/>
+      <g stroke="#2a1c14" stroke-width="1.5" opacity=".7">
+        <path d="M-70,-290 L-80,-178 M70,-290 L80,-178 M-80,178 L-70,290 M80,178 L70,290" stroke-dasharray="5 7"/></g>
+      <g filter="url(#sh)">
+        <rect x="-112" y="-196" width="224" height="46" rx="10" fill="url(#case)"/>
+        <rect x="-112" y="150" width="224" height="46" rx="10" fill="url(#case)"/>
+        <rect x="186" y="-22" width="36" height="44" rx="6" fill="url(#case)"/>
+        <circle r="196" fill="url(#case)"/>
+        <circle r="176" fill="#0d0b08"/>
+        <circle r="170" fill="url(#case)" opacity=".55"/>
+        <circle r="160" fill="url(#dial)"/>
+      </g>
+      <g id="ticks"></g>
+      <g font-family="Fraunces" fill="#e8d7b6" text-anchor="middle">
+        <text y="-88" font-size="17" letter-spacing="6">ÆRA</text>
+        <text y="70" font-size="9" font-family="Inter" letter-spacing="3" fill="#a9c3b4">AUTOMATIK</text>
+      </g>
+      <circle cx="0" cy="92" r="26" fill="none" stroke="#5e8a73" stroke-width="1"/>
+      <line x1="0" y1="92" x2="0" y2="72" stroke="#e8d7b6" stroke-width="1.5"/>
+      <g stroke-linecap="round">
+        <line x1="0" y1="12" x2="-58" y2="-86" stroke="#f1e2c4" stroke-width="7"/>
+        <line x1="0" y1="16" x2="110" y2="-40" stroke="#f1e2c4" stroke-width="5"/>
+        <line x1="0" y1="30" x2="-40" y2="138" stroke="#c9a86a" stroke-width="1.6"/>
+      </g>
+      <circle r="9" fill="#e8d7b6"/><circle r="3" fill="#2a2016"/>
+      <circle r="160" fill="url(#glass)"/>
+    </svg>
+    <div class="spec">Referenz 1906 · 39 mm · Roségold<b>ab 4.900 €</b></div>
+  </div>
+</section>
+<footer>
+  <div><i></i><span><b>Ref. 1906</b>Champagner · 39 mm</span></div>
+  <div><i class="g"></i><span><b>Ref. 1911</b>Waldgrün · 37 mm</span></div>
+  <div><i class="b"></i><span><b>Ref. 1924</b>Nachtblau · 40 mm</span></div>
+  <div><i class="s"></i><span><b>Ref. 1930</b>Silber · 38 mm</span></div>
+</footer>
+<script>
+  const g = document.getElementById("ticks"), ns = "http://www.w3.org/2000/svg";
+  for (let i = 0; i < 60; i++) {
+    const a = i * 6 * Math.PI / 180, big = i % 5 === 0, r1 = big ? 128 : 144, r2 = 152;
+    const l = document.createElementNS(ns, "line");
+    l.setAttribute("x1", Math.sin(a) * r1); l.setAttribute("y1", -Math.cos(a) * r1);
+    l.setAttribute("x2", Math.sin(a) * r2); l.setAttribute("y2", -Math.cos(a) * r2);
+    l.setAttribute("stroke", big ? "#e8d7b6" : "#7fa391"); l.setAttribute("stroke-width", big ? 5 : 1.2);
+    g.appendChild(l);
+  }
+</script>
+</body></html>

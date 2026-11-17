@@ -4,6 +4,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { makeVGeometry } from "./env";
 import { makeGrid, makeScreen, makeStone, type ScreenKind } from "./textures";
+import { flight } from "./flight";
 
 /*
  * Die VONUMO-Studio-Pavillon-Szene (Gegenstück zum Chalet der Referenz).
@@ -66,6 +67,29 @@ function Peaks() {
       <meshStandardMaterial color="#1a1f33" roughness={0.75} metalness={0.1} flatShading envMapIntensity={0.6} />
     </mesh>
   );
+}
+
+/** Übergroßer Schriftzug als Monument in der Landschaft – echte Tiefe und Parallaxe bei den Kamerafahrten. */
+function Wordmark() {
+  const { tex, mat } = useMemo(() => {
+    const c = document.createElement("canvas"); c.width = 2048; c.height = 440;
+    const x = c.getContext("2d")!;
+    const draw = () => {
+      x.clearRect(0, 0, c.width, c.height);
+      const g = x.createLinearGradient(0, 40, 0, 420);
+      g.addColorStop(0, "rgba(150,170,255,1)"); g.addColorStop(0.55, "rgba(79,107,255,0.75)"); g.addColorStop(1, "rgba(79,107,255,0)");
+      x.fillStyle = g; x.font = "900 400px Doto, 'Geist Mono Variable', monospace"; x.textAlign = "center"; x.textBaseline = "alphabetic";
+      x.fillText("VONUMO", 1024, 380);
+    };
+    draw();
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+    document.fonts?.ready.then(() => { draw(); tex.needsUpdate = true; });
+    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0, depthWrite: false, toneMapped: false, color: new THREE.Color(1.6, 1.6, 1.6), fog: true });
+    return { tex, mat };
+  }, []);
+  useFrame((_, dt) => { if (flight.started) mat.opacity = Math.min(0.62, mat.opacity + dt * 0.35); });
+  void tex;
+  return <mesh position={[3, 7.2, -44]} material={mat}><planeGeometry args={[64, 13.75]} /></mesh>;
 }
 
 function Ground() {
@@ -178,6 +202,7 @@ export function Studio({ mobile }: { mobile: boolean }) {
       <pointLight position={[3.4, 4.6, -3.6]} intensity={5} distance={7} decay={2} color="#4f6bff" />
 
       <Peaks />
+      <Wordmark />
       <Ground />
 
       {/* Sockel + untere Terrasse */}
