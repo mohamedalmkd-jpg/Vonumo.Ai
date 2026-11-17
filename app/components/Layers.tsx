@@ -1,86 +1,90 @@
 "use client";
-import { useRef, useState } from "react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { LAYERS } from "@/lib/content";
+import { SectionHead } from "./Reveal";
+import { Scramble } from "./Scramble";
 
-/** Gepinnte Szene: beim Scrollen baut sich eine Website Ebene für Ebene auf. */
-export function Layers() {
-  const ref = useRef<HTMLElement>(null);
-  const [i, setI] = useState(0);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  useMotionValueEvent(scrollYProgress, "change", (v) => setI(Math.min(LAYERS.length - 1, Math.max(0, Math.floor(v * LAYERS.length)))));
-
-  const jump = (n: number) => {
-    const el = ref.current;
-    if (!el) return;
-    const top = el.offsetTop + ((n + 0.5) / LAYERS.length) * (el.offsetHeight - window.innerHeight);
-    window.scrollTo({ top, behavior: "smooth" });
-  };
-
-  const L = LAYERS[i];
+/** Inhalt jeder Platte – eine Website in fünf Schichten. */
+function Plate({ n }: { n: number }) {
+  if (n === 0) return <div className="absolute inset-0 bg-[radial-gradient(70%_70%_at_30%_30%,#4f6bff,transparent_70%),radial-gradient(60%_60%_at_80%_80%,#ff4fa8,transparent_70%),#0b0b1a]" />;
+  if (n === 1) return (
+    <div className="absolute inset-x-[8%] top-[8%] flex items-center justify-between border border-white/25 bg-black/50 px-3 py-2">
+      <i className="h-1.5 w-10 bg-white" /><span className="flex gap-2">{[0, 1, 2].map((k) => <i key={k} className="h-1 w-6 bg-white/50" />)}</span><i className="h-3 w-8 bg-a2" />
+    </div>
+  );
+  if (n === 2) return <div className="absolute inset-[22%] bg-[conic-gradient(from_200deg,#33e1ff,#4f6bff,#ff4fa8,#c4ff3d,#33e1ff)] shadow-[0_0_60px_rgb(79_107_255/.6)]" />;
+  if (n === 3) return (
+    <div className="absolute inset-[12%] flex flex-col justify-center gap-2">
+      <span className="dot text-6xl text-white">Aa</span><i className="h-1.5 w-4/5 bg-white/70" /><i className="h-1.5 w-3/5 bg-white/40" />
+    </div>
+  );
   return (
-    <section ref={ref} id="ebenen" aria-label="Die fünf Ebenen einer Website" className="relative" style={{ height: `${LAYERS.length * 70 + 60}vh` }}>
-      <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-6 px-5 pt-16 sm:px-6 md:grid-cols-[1fr_1.1fr] md:gap-10 md:pt-0 [&>*]:min-w-0">
-          <div>
-            <span className="kicker hidden sm:inline">Unsere Mission · Jede Ebene mit Absicht</span>
-            <div className="flex items-center gap-3 font-mono text-sm text-mute sm:mt-6">
-              <span>{String(i + 1).padStart(2, "0")} / 05</span>
-              <span className="h-px w-10 bg-line" />
-              <span className="text-fg">{L.tag}</span>
-            </div>
-            <div className="relative mt-3 min-h-[9.5rem] sm:mt-4 sm:min-h-[13rem]" aria-live="polite">
-              <AnimatePresence mode="wait">
-                <motion.div key={L.key} initial={{ opacity: 0, y: 20, filter: "blur(6px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -20, filter: "blur(6px)" }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
-                  <h2 className="text-3xl font-extrabold tracking-tight sm:text-6xl">{L.title}</h2>
-                  <p className="mt-3 max-w-md text-mute sm:mt-5 sm:text-lg">{L.text}</p>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-            <ol className="mt-4 flex gap-2 sm:mt-6" aria-label="Ebenen">
-              {LAYERS.map((l, n) => (
-                <li key={l.key}>
-                  <button type="button" onClick={() => jump(n)} aria-label={l.tag} aria-current={n === i ? "step" : undefined}
-                    className={`h-10 min-w-12 rounded-xl border px-3 font-mono text-xs transition-all duration-300 ${n === i ? "border-a1 bg-a1/15 text-fg" : n < i ? "border-line text-fg/70" : "border-line text-mute hover:text-fg"}`}>
-                    {l.key}
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </div>
-          <Mock step={i} />
-        </div>
-      </div>
-    </section>
+    <div className="absolute inset-x-[12%] bottom-[14%] flex gap-2">
+      <i className="h-8 w-24 bg-white shadow-[0_0_30px_rgb(255_255_255/.6)]" /><i className="h-8 w-16 border border-white/60" />
+    </div>
   );
 }
 
-function Mock({ step }: { step: number }) {
-  const show = (n: number) => ({ opacity: step >= n ? 1 : 0, y: step >= n ? 0 : 24, scale: step >= n ? 1 : 0.96 });
-  const t = { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const };
+export function Layers() {
+  const sec = useRef<HTMLElement>(null);
+  const marks = useRef<(HTMLSpanElement | null)[]>([]);
+  const label = useRef<HTMLDivElement>(null);
+  const [p, setP] = useState(0);
+  const [line, setLine] = useState<number[] | null>(null);
+  const i = Math.min(LAYERS.length - 1, Math.floor(p * LAYERS.length * 0.999));
+  const spread = Math.min(1, p * 2.2);
+
+  useEffect(() => {
+    const st = ScrollTrigger.create({ trigger: sec.current, start: "top top", end: "bottom bottom", onUpdate: (s) => setP(s.progress) });
+    return () => st.kill();
+  }, []);
+
+  useEffect(() => {
+    const m = marks.current[i]?.getBoundingClientRect(), l = label.current?.getBoundingClientRect(), s = sec.current?.querySelector("[data-sticky]")?.getBoundingClientRect();
+    if (!m || !l || !s) return;
+    const right = l.left > m.right;
+    setLine([m.left + 4 - s.left, m.top + 4 - s.top, (right ? l.left : l.left + 24) - s.left, l.top + 14 - s.top]);
+  }, [i, p]);
+
+  const L = LAYERS[i];
   return (
-    <div className="relative mx-auto aspect-[4/3] w-full max-w-[min(100%,52svh)] [perspective:1400px] md:max-w-none" aria-hidden="true">
-      <motion.div animate={{ rotateX: 10 - step * 2, rotateY: -16 + step * 3 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }} className="absolute inset-0 overflow-hidden rounded-3xl border border-line bg-ink-2 shadow-[0_40px_120px_-30px_rgb(124_92_255/0.5)] [transform-style:preserve-3d]">
-        <motion.div animate={{ opacity: step >= 0 ? 1 : 0 }} className="absolute inset-0 bg-[radial-gradient(80%_80%_at_80%_20%,rgb(124_92_255/0.55),transparent_60%),radial-gradient(60%_60%_at_10%_90%,rgb(34_211_238/0.35),transparent_60%)]" />
-        <motion.div animate={show(1)} transition={t} className="absolute inset-x-4 top-4 flex items-center justify-between rounded-full border border-white/10 bg-black/30 px-4 py-2.5 backdrop-blur">
-          <span className="h-2.5 w-16 rounded-full bg-white/80" />
-          <span className="flex gap-3">{[0, 1, 2].map((k) => <span key={k} className="h-2 w-9 rounded-full bg-white/30" />)}</span>
-          <span className="h-5 w-14 rounded-full bg-a1" />
-        </motion.div>
-        <motion.div animate={show(2)} transition={t} className="absolute right-5 top-[22%] h-[52%] w-[40%] rounded-2xl bg-[conic-gradient(from_200deg,#22d3ee,#7c5cff,#f472b6,#22d3ee)] opacity-90 shadow-2xl">
-          <div className="absolute inset-3 rounded-xl bg-[radial-gradient(circle_at_30%_30%,rgb(255_255_255/0.5),transparent_50%)]" />
-        </motion.div>
-        <motion.div animate={show(3)} transition={t} className="absolute left-6 top-[28%] w-[48%] space-y-3">
-          <span className="block h-6 w-[90%] rounded-md bg-white" />
-          <span className="block h-6 w-[70%] rounded-md bg-gradient-to-r from-a2 to-a1" />
-          <span className="block h-2 w-[85%] rounded bg-white/30" />
-          <span className="block h-2 w-[65%] rounded bg-white/30" />
-        </motion.div>
-        <motion.div animate={show(4)} transition={t} className="absolute bottom-[14%] left-6 flex gap-3">
-          <motion.span animate={step >= 4 ? { boxShadow: ["0 0 0 0 rgb(124 92 255/.6)", "0 0 0 14px rgb(124 92 255/0)"] } : {}} transition={{ repeat: Infinity, duration: 1.6 }} className="h-9 w-28 rounded-full bg-gradient-to-r from-a1 to-a2" />
-          <span className="h-9 w-24 rounded-full border border-white/20" />
-        </motion.div>
-      </motion.div>
-    </div>
+    <section ref={sec} id="ebenen" className="relative h-[360vh]" aria-label="Technologie – fünf Ebenen einer Website">
+      <div data-sticky className="sticky top-0 h-[100svh] overflow-hidden">
+        <div className="mx-auto grid h-full max-w-[1400px] grid-rows-[auto_1fr_auto] px-4 pb-6 pt-20 sm:px-6">
+          <SectionHead index="03" label="Technologie" title="Jede Ebene mit Absicht." className="max-w-xl" />
+
+          <div className="relative grid place-items-center [perspective:1600px]">
+            <div className="relative h-[min(42vw,320px)] w-[min(42vw,320px)] max-sm:h-[52vw] max-sm:w-[52vw]" style={{ transformStyle: "preserve-3d", transform: `rotateX(58deg) rotateZ(${-42 + p * 18}deg)` }}>
+              {LAYERS.map((l, n) => {
+                const z = (n - 2) * (14 + spread * 52);
+                const on = n === i;
+                return (
+                  <div key={l.key} className="absolute inset-0 border transition-[border-color,box-shadow,opacity] duration-500"
+                    style={{ transform: `translateZ(${z}px)`, borderColor: on ? "rgb(255 255 255 / .9)" : "rgb(255 255 255 / .18)", background: n === 0 ? undefined : "rgb(12 12 20 / .55)", boxShadow: on ? "0 0 50px rgb(79 107 255 / .45)" : "none", opacity: n > i + 1 ? 0.35 : 1 }}>
+                    <Plate n={n} />
+                    <span ref={(el) => { marks.current[n] = el; }} className={`absolute right-[6%] top-[6%] h-2 w-2 ${on ? "bg-white" : "bg-white/30"}`} />
+                    <span className="absolute bottom-1 left-2 text-[9px] uppercase tracking-widest text-white/50">{String(n + 1).padStart(2, "0")} · {l.key}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div ref={label} className="hud brackets absolute right-0 top-[8%] w-[min(19rem,80vw)] p-4 max-md:bottom-0 max-md:top-auto max-md:left-0 max-md:right-auto" aria-live="polite">
+              <div className="flex items-center justify-between"><span className="label">{String(i + 1).padStart(2, "0")} / 05</span><span className="label text-a2">{L.tag}</span></div>
+              <Scramble key={L.key} as="h3" text={L.title} onView={false} className="dot mt-3 block text-3xl" />
+              <p className="mt-2 text-[11px] uppercase leading-relaxed tracking-wide text-mute">{L.text}</p>
+            </div>
+          </div>
+
+          <p className="max-w-sm text-[11px] uppercase leading-relaxed tracking-wide text-mute max-md:hidden">Hintergrund, Navigation, Bild, Typografie, Interaktion – scrollen Sie, und die Website zerlegt sich in ihre Schichten.</p>
+        </div>
+        {line && (
+          <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
+            <polyline points={`${line[0]},${line[1]} ${line[0] + (line[2] - line[0]) * 0.35},${line[3]} ${line[2]},${line[3]}`} fill="none" stroke="rgb(255 255 255 / .55)" strokeWidth="1" />
+            <rect x={line[0] - 5} y={line[1] - 5} width="10" height="10" fill="none" stroke="#fff" />
+          </svg>
+        )}
+      </div>
+    </section>
   );
 }

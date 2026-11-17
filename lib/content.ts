@@ -6,10 +6,34 @@ export const CONTACT = {
 
 export const NAV = [
   { href: "#leistungen", label: "Leistungen" },
-  { href: "#build", label: "Live-Build" },
+  { href: "#ebenen", label: "Technologie" },
   { href: "#preise", label: "Preise" },
-  { href: "#ablauf", label: "Ablauf" },
+  { href: "#faq", label: "FAQ" },
   { href: "#kontakt", label: "Kontakt" },
+] as const;
+
+export const DETAILS = [
+  { icon: "bolt", title: "Performance", text: "Ziel: Lighthouse 90+. 3D und Bilder laden erst, wenn sie gebraucht werden – ausgeliefert über ein weltweites Edge-Netzwerk." },
+  { icon: "shield", title: "Sicherheit", text: "HTTPS, Sicherheits-Header, Spam-Schutz und Rate-Limiting. Schlüssel liegen nur auf dem Server – nie im Browser." },
+  { icon: "lock", title: "DSGVO-konform", text: "Keine Tracking-Cookies, Schriften lokal geladen, Einwilligung vor jeder Verarbeitung. Impressum und Datenschutz inklusive." },
+  { icon: "code", title: "Sauberer Code", text: "Typisiert, versioniert in Git, modular. Der Code gehört Ihnen – vollständig und ohne Abhängigkeit von uns." },
+  { icon: "spark", title: "KI, die mitarbeitet", text: "Assistenten und Automatisierung, die Ihre Abläufe kennen und Ihrem Team jeden Tag Zeit schenken." },
+] as const;
+
+export const CARDS = [
+  { kind: "knot", color: "#33e1ff", title: "3D-Websites", tag: "WebGL · Motion", from: "ab 49 €", text: "Echte 3D-Szenen, flüssig bis aufs Smartphone." },
+  { kind: "box", color: "#ff4fa8", title: "UI/UX-Design", tag: "Figma · System", from: "ab 49 €", text: "Oberflächen, die Besucher zu Kunden machen." },
+  { kind: "blob", color: "#c4ff3d", title: "KI-Systeme", tag: "Assistent · Automatik", from: "ab 199 €", text: "Chatbots und Automationen mit echtem Nutzen." },
+  { kind: "capsule", color: "#ff6a2a", title: "Wartung & Hosting", tag: "Backups · Updates", from: "inklusive", text: "Wir halten alles schnell, sicher und aktuell." },
+] as const;
+
+export const FAQ = [
+  { q: "Wie lange dauert ein Projekt?", a: "Vom ersten Termin bis zum Livegang meist 2–4 Wochen. Größere Projekte mit individuellen 3D-Szenen planen wir gemeinsam im Beratungsgespräch." },
+  { q: "Gehört mir die Website?", a: "Ja. Code, Inhalte und Domain gehören Ihnen. Sie können jederzeit mit allem umziehen – ohne Lock-in." },
+  { q: "Kann ich Inhalte selbst ändern?", a: "Je nach Paket sind monatliche Änderungen inklusive. Auf Wunsch richten wir ein einfaches Redaktionssystem ein." },
+  { q: "Läuft 3D auch auf dem Handy?", a: "Ja. Wir passen Auflösung und Effekte automatisch an das Gerät an, pausieren unsichtbare Szenen und respektieren „reduzierte Bewegung“." },
+  { q: "Wie funktioniert die Kündigung?", a: "Monatliche Pakete sind monatlich kündbar. Jahrespakete laufen 12 Monate und sparen 20 %." },
+  { q: "Was kostet das Beratungsgespräch?", a: "Nichts. 30 Minuten per Video oder Telefon, unverbindlich – mit einer ehrlichen Einschätzung zu Aufwand und Paket." },
 ] as const;
 
 export const SERVICES = [
