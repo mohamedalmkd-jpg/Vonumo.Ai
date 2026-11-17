@@ -34,9 +34,12 @@ const { chromium, devices } = require('playwright');
         textVisible: !!document.querySelector('h1'),
         overflow: document.documentElement.scrollWidth > innerWidth
       }));
-      const ordered = ['vonumo:hero-assets-ready', 'vonumo:loaded', 'vonumo:hero-ready'];
-      const correctOrder = ordered.every((event, i) => state.events.indexOf(event) !== -1 &&
-        (i === 0 || state.events.indexOf(ordered[i-1]) < state.events.indexOf(event)));
+      // Slow devices may hit the loader timeout before textures load; both signals
+      // must still precede the moment the poster is removed.
+      const readyAt = state.events.indexOf('vonumo:hero-ready');
+      const correctOrder = readyAt > state.events.indexOf('vonumo:hero-assets-ready') &&
+        readyAt > state.events.indexOf('vonumo:loaded') &&
+        state.events.includes('vonumo:hero-assets-ready') && state.events.includes('vonumo:loaded');
       const pass = correctOrder && state.posterOpacity < 0.1 && state.textVisible && !state.overflow && errors.length === 0;
       console.log(name, pass ? 'PASS' : 'FAIL', { ...state, errors });
       if (!pass) failed = true;
