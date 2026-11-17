@@ -1,7 +1,7 @@
 "use client";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useTexture, View } from "@react-three/drei";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { pointer } from "./env";
 import { CHAPTERS, MOVES, flight, hero } from "./flight";
@@ -75,6 +75,8 @@ void main(){
   vec2 dir = uv - 0.5;
   vec3 acc = vec3(0.); float tot = 0.;
   for (int s = 0; s < 6; s++) {
+    // Cap blur taps on phones to reduce shader cost during camera moves.
+    if (mobile > 0.5 && s >= 3) break;
     float t = float(s) / 5.;
     vec2 u = uv - dir * t * blurAmt;
     float da, db;
@@ -137,10 +139,13 @@ function Quad() {
     u.tA.value = tA; u.tB.value = tB; u.dA.value = dA; u.dB.value = dB;
     const ia = tA.image as HTMLImageElement, ib = tB.image as HTMLImageElement;
     u.uAspA.value.x = ia.width / ia.height; u.uAspB.value.x = ib.width / ib.height;
-    window.dispatchEvent(new Event("vonumo:hero-ready"));
+    // Textures are uploaded, but the shader is still dark until the intro fade completes.
+    (window as unknown as { __vonumoHeroAssetsReady?: boolean }).__vonumoHeroAssetsReady = true;
+    window.dispatchEvent(new Event("vonumo:hero-assets-ready"));
   }, [tA, tB, dA, dB, mat]);
 
   const st = useMemo(() => ({ p: 0, intro: 0, lights: 0, ptr: new THREE.Vector2(), reduce: false, lastP: 0, t0: 0 }), []);
+  const visibleSignalled = useRef(false);
   useEffect(() => { st.reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; }, [st]);
 
   useFrame((state, dtRaw) => {
@@ -168,16 +173,26 @@ function Quad() {
     u.focusB.value = 0.3;
     u.dof.value = (portrait ? 0.005 : 0.007) + (1 - k) * 0.02;
     // Zeiger/Touch-Parallaxe (gedämpft)
-    if (!st.reduce) st.ptr.lerp(new THREE.Vector2(pointer.x, pointer.y), 1 - Math.exp(-dt * 3));
+    if (!st.reduce) {
+      const pointerEase = 1 - Math.exp(-dt * 3);
+      st.ptr.x += (pointer.x - st.ptr.x) * pointerEase;
+      st.ptr.y += (pointer.y - st.ptr.y) * pointerEase;
+    }
     u.ptr.value.copy(st.ptr);
     // Bewegungsunschärfe aus der Fahrtgeschwindigkeit
     const speed = Math.abs(p - st.lastP) / Math.max(dt, 1e-3); st.lastP = p;
     u.blurAmt.value += ((st.reduce ? 0 : Math.min(0.06, speed * 0.12)) - u.blurAmt.value) * (1 - Math.exp(-dt * 10));
-    u.panA.value.copy(portrait ? EXT.panPortrait : new THREE.Vector2());
-    u.panB.value.copy(portrait ? INT.panPortrait : new THREE.Vector2());
+    u.panA.value.set(portrait ? EXT.panPortrait.x : 0, portrait ? EXT.panPortrait.y : 0);
+    u.panB.value.set(portrait ? INT.panPortrait.x : 0, portrait ? INT.panPortrait.y : 0);
     u.uRes.value.set(size.width, size.height);
     u.lights.value = st.lights; u.time.value = flight.time; u.fade.value = st.reduce ? 1 : Math.min(1, st.intro * 2);
     u.mobile.value = size.width < 768 ? 1 : 0;
+    // Notify the DOM only when the visible scene is bright enough to replace the poster.
+    if (!visibleSignalled.current && (st.reduce || st.intro >= 0.62)) {
+      visibleSignalled.current = true;
+      (window as unknown as { __vonumoHeroReady?: boolean }).__vonumoHeroReady = true;
+      window.dispatchEvent(new Event("vonumo:hero-ready"));
+    }
     // Zustand für Hotspots (DOM) bereitstellen
     hero.zA = u.zA.value; hero.zB = u.zB.value; hero.mixB = u.mixB.value; hero.ptr = [st.ptr.x, st.ptr.y];
     hero.focusA = u.focusA.value; hero.focusB = u.focusB.value; hero.w = size.width; hero.h = size.height;
