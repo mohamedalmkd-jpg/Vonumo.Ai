@@ -17,6 +17,9 @@
 | GitHub | MCP + git | 🔌 | `get_me`: mohamedalmkd-jpg. Push to feature branches works |
 | Vercel | MCP | 🔌 | Preview deploys of `vonumo-v2` from feature branches work. Production is never touched without approval |
 | Poly Haven | HTTP API | ✅ | In production use: night HDRI `moonlit_golf` (1k/2k, DWAA EXR), PBR sets in `public/tex`, models in `public/models`. Needs a non-default User-Agent (Python urllib gets 403). Thumbnails (`cdn.polyhaven.com`) are not allowlisted, so previews are rendered locally |
+| Blender 5.3 (headless, `bpy` from PyPI) | Python module | ✅ | Installed in a scratch venv (`pip install bpy==5.3.0`, ~1.1 GB, not in the repo). Modelling, Cycles AO bake and glTF export verified with `scripts/blender/pavilion.py`. Draco/meshopt export libraries are missing from the wheel, so GLBs are uncompressed |
+| Terrain data (AWS Terrain Tiles, Mapzen/SRTM) | open data | ✅ | `s3.amazonaws.com/elevation-tiles-prod` reachable. Source of `public/terrain/alps.png` (Pennine Alps). Attribution: Mapzen Terrain Tiles, which include SRTM and other public datasets |
+| Sketchfab / CGTrader / TurboSquid | model stores | ❌ | Not reachable from this environment, and they need an owner account or licence. Required for reference-grade furniture and plants (office chairs, white modular sofa, kentia palms) |
 | Awwwards / CSS Design Awards | websites | ⚠️ | Not on the network allowlist. Study references the owner sends (URLs, recordings); add a host only for a concrete reference |
 
 ## Earlier inventory (2026-11-17)
