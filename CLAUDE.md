@@ -78,7 +78,8 @@ We build premium, cinematic, highly interactive websites. Quality target = the o
 - Fonts are local (Fontsource): **Outfit** (UI + display, from the owner's mockups), Geist Mono (code only), Doto (legacy, loader). No Google Fonts requests.
 
 ## Visual language (current)
-- Night studio / premium dark (owner mockups, Nov 2026): deep navy-black, warm wood light, blue/violet neon edges, glossy black V. Background `--color-ink #040406`, subtle 96px/12px grid. Scanline overlay removed for sharpness.
+- Night studio / premium dark. **Look target = the owner collage, analysed in `docs/reference-spec.md`** (palette, type, layout, light, materials). It has a navy starry sky, a far alpine band, smooth wet concrete, warm 3000 K architectural light and blue LED accents. No violet architectural light. The V is chamfered and faceted (`makeFacetedV`). Background `--color-ink #040406`, subtle 96px/12px grid.
+- UI per reference: nav Leistungen · Projekte · Studio · Preise · Kontakt (no "Blog" until there is content), "Termin buchen ↗", round menu button on all widths, monospaced eyebrows ("01 / STUDIO"), "↗" on CTAs.
 - Accents: `a1 #4f6bff` (primary blue), `a2 #33e1ff` (cyan focus/hover), `a3 #ff4fa8`, `lime #c4ff3d`. Accents are light, not fill — use sparingly as rim lights, edges, focus.
 - Text: `fg #ecedf3`, `mute #7d7f8f`, `dim #4a4c58`. Labels 11px uppercase, tracking 0.12em.
 - Display type: Outfit Light (300), tight tracking (−0.02 to −0.03em). `.dot` now maps to Outfit Light uppercase. Body: Outfit 15px.

@@ -34,7 +34,7 @@ const WIDE = {
     { pos: v(0.2, 2.1, 7.0), tgt: v(1.6, 2.4, -3) },
     { pos: v(1.1, 2.15, 4.2), tgt: v(2.0, 2.4, -4) },
     // Referenz „03 / Erlebnis“: nah, leicht von unten, V-Skulptur füllt die rechte Bildhälfte
-    { pos: v(0.55, 1.75, -0.1), tgt: v(1.55, 2.2, -3.2) },
+    { pos: v(0.45, 1.5, 0.35), tgt: v(1.55, 2.05, -3.1) },
   ]),
 };
 const TALL = {
@@ -132,7 +132,7 @@ function Flight() {
   const mobile = size.width < 768;
   const portrait = size.height > size.width;
   const [scene] = useState(() => new THREE.Scene());
-  const cam = useMemo(() => new THREE.PerspectiveCamera(40, 1, 0.1, 600), []);
+  const cam = useMemo(() => new THREE.PerspectiveCamera(40, 1, 0.1, 1300), []);
   // Szene → (MSAA) → Bloom; Ergebnis liest die Unschärfe-Fläche als Textur
   const composer = useMemo(() => {
     const w = Math.max(2, Math.round(size.width * viewport.dpr)), h = Math.max(2, Math.round(size.height * viewport.dpr));
@@ -163,7 +163,7 @@ function Flight() {
     const stopHdri = applyHdri(gl, scene, mobile ? "night" : "night-2k", 0.32);
     // Schatten (nur Desktop): Mondlicht wirft den Pavillon auf den nassen Vorplatz
     gl.shadowMap.enabled = !mobile; gl.shadowMap.type = THREE.PCFSoftShadowMap;
-    scene.fog = new THREE.Fog("#0e1436", 160, 900); // nur leichte Luftperspektive: Gebirge bleibt klar lesbar
+    scene.fog = new THREE.Fog("#111c44", 200, 1250); // nur leichte Luftperspektive: Gebirge bleibt klar lesbar
     st.reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (isCapture()) document.documentElement.dataset.capture = "";
     // Shader vorab kompilieren, damit der erste Scroll nicht ruckelt

@@ -11,7 +11,7 @@ function Macro({ chapters }: { chapters: number[] }) {
   const geo = useMemo(makeFacetedV, []);
   const mats = useMemo(() => [
     new THREE.MeshPhysicalMaterial({ color: "#020308", metalness: 0.7, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 2.2 }),
-    new THREE.MeshPhysicalMaterial({ color: "#1d3dff", metalness: 0.35, roughness: 0.06, clearcoat: 1, emissive: new THREE.Color("#1438ff"), emissiveIntensity: 0.5, envMapIntensity: 2 }),
+    new THREE.MeshPhysicalMaterial({ color: "#0b1660", metalness: 0.75, roughness: 0.08, clearcoat: 1, emissive: new THREE.Color("#1438ff"), emissiveIntensity: 0.3, envMapIntensity: 2.4 }),
   ], []);
   const { gl, scene } = useThree();
   const bg = useMemo(() => new THREE.Color("#05060b"), []);

@@ -2,7 +2,6 @@
 import { useFrame } from "@react-three/fiber";
 import { MeshReflectorMaterial, RoundedBox } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import * as THREE from "three";
 import { makeFacetedV, makeVOutline } from "./env";
 import { flight } from "./flight";
@@ -28,15 +27,15 @@ function Sky() {
     fragmentShader: `varying vec3 vP;
       void main(){
         float h = vP.y;
-        vec3 top = vec3(0.003,0.005,0.018), hor = vec3(0.035,0.065,0.21);
+        vec3 top = vec3(0.006,0.011,0.04), hor = vec3(0.05,0.1,0.3);
         vec3 col = mix(hor, top, smoothstep(-0.02, 0.5, h));
-        col += vec3(0.08,0.14,0.42) * exp(-abs(h-0.04)*14.0) * 0.45;
+        col += vec3(0.08,0.14,0.42) * exp(-abs(h-0.08)*7.0) * 0.5;
         gl_FragColor = vec4(col,1.);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
       }`,
   }), []);
-  return <mesh material={mat} frustumCulled={false}><sphereGeometry args={[300, 32, 16]} /></mesh>;
+  return <mesh material={mat} frustumCulled={false}><sphereGeometry args={[950, 48, 24]} /></mesh>;
 }
 
 function Stars({ count }: { count: number }) {
@@ -44,7 +43,7 @@ function Stars({ count }: { count: number }) {
     const p = new Float32Array(count * 3), c = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const th = Math.random() * Math.PI * 2, y = 0.08 + Math.pow(Math.random(), 0.7) * 0.92, rr = Math.sqrt(1 - y * y);
-      p.set([Math.cos(th) * rr * 280, y * 280, Math.sin(th) * rr * 280], i * 3);
+      p.set([Math.cos(th) * rr * 900, y * 900, Math.sin(th) * rr * 900], i * 3); // hinter dem Gebirge (sonst Sterne vor den Gipfeln)
       const b = 0.25 + Math.pow(Math.random(), 3) * 1.1; c.set([b * 0.88, b * 0.93, b * 1.08], i * 3);
     }
     const g = new THREE.BufferGeometry();
@@ -61,6 +60,11 @@ function vnoise(x: number, y: number) {
   const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
   const a = hash2(xi, yi), b = hash2(xi + 1, yi), c = hash2(xi, yi + 1), d = hash2(xi + 1, yi + 1);
   return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function fbm(x: number, y: number) {
+  let f = 0, amp = 0.5, fr = 1;
+  for (let o = 0; o < 5; o++) { f += vnoise(x * fr, y * fr) * amp; amp *= 0.5; fr *= 2.07; }
+  return f;
 }
 function ridged(x: number, y: number) {
   let f = 0, amp = 0.55, fr = 1, w = 1;
@@ -117,22 +121,25 @@ function Peaks({ mobile }: { mobile: boolean }) {
   const geo = useMemo(() => {
     // Referenz: weit entfernte, zackige Alpenkette als Band hinter dem Pavillon (nicht ein naher Fels)
     const segX = mobile ? 360 : 760, segZ = mobile ? 50 : 110;
-    const g = new THREE.PlaneGeometry(1400, 240, segX, segZ);
+    const g = new THREE.PlaneGeometry(1900, 340, segX, segZ);
     g.rotateX(-Math.PI / 2);
-    g.translate(0, 0, -370); // z ≈ −250 … −490
+    g.translate(0, 0, -560); // z ≈ −390 … −730: Band am Horizont, wie in der Referenz
     const p = g.attributes.position;
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i), z = p.getZ(i);
-      const back = THREE.MathUtils.smoothstep(-z, 255, 345);        // vorne flach, hinten hoch
+      const back = THREE.MathUtils.smoothstep(-z, 395, 480);        // vorne flach, hinten hoch
       const ridgeLine = 0.72 + 0.28 * Math.sin(x * 0.009 + 1.3);    // Kammverlauf variiert
-      const h = THREE.MathUtils.clamp((ridged(x * 0.0085 + 3.1, z * 0.0085 - 1.7) - 0.1) / 0.55, 0, 1);
-      p.setY(i, -4 + Math.pow(h, 1.25) * 105 * back * ridgeLine);
+      // große Massive (fbm) × Grate (ridged) → Alpenkette statt einzelner Felsnadeln
+      const massif = THREE.MathUtils.clamp((fbm(x * 0.0042 + 7.3, z * 0.0042 + 2.1) - 0.2) / 0.45, 0, 1);
+      const ridge = THREE.MathUtils.clamp(ridged(x * 0.013 + 3.1, z * 0.013 - 1.7) / 1.1, 0, 1);
+      const h = Math.pow(massif, 1.15) * (0.5 + 0.5 * ridge);
+      p.setY(i, -4 + h * 175 * back * ridgeLine);
     }
     g.computeVertexNormals();
     const n = g.attributes.normal, snow = new Float32Array(p.count);
     for (let i = 0; i < p.count; i++) {
       const y = p.getY(i), ny = n.getY(i);
-      snow[i] = THREE.MathUtils.smoothstep(y + (hash2(p.getX(i), p.getZ(i)) - 0.5) * 14, 26, 50) * THREE.MathUtils.smoothstep(ny, 0.4, 0.7);
+      snow[i] = THREE.MathUtils.smoothstep(y + (hash2(p.getX(i), p.getZ(i)) - 0.5) * 18, 34, 66) * THREE.MathUtils.smoothstep(ny, 0.22, 0.55);
     }
     g.setAttribute("snow", new THREE.BufferAttribute(snow, 1));
     return g;
@@ -188,49 +195,6 @@ function LightCone({ position, color = "#ffcf9a", radius = 0.9, height = 2.4, st
   return <mesh position={position} material={mat}><coneGeometry args={[radius, height, 32, 1, true]} /></mesh>;
 }
 
-function Trees() {
-  const ref = useRef<THREE.InstancedMesh>(null);
-  const spots = useMemo(() => {
-    const out: [number, number, number][] = [];
-    const r = (s: number) => { const v = Math.sin(s * 91.7) * 43758.5453; return v - Math.floor(v); };
-    for (let i = 0; i < 46; i++) {
-      const side = i % 2 ? 1 : -1;
-      out.push([side * (13 + r(i) * 26), -4 - r(i + 50) * 34, 0.7 + r(i + 99) * 0.9]);
-    }
-    return out;
-  }, []);
-  const geo = useMemo(() => {
-    // Nadelbaum aus 7 hängenden, unregelmäßigen Astetagen (glatt schattiert) + Stamm
-    const r = (k: number) => { const v = Math.sin(k * 12.9898) * 43758.5453; return v - Math.floor(v); };
-    const tiers = Array.from({ length: 7 }, (_, k) => {
-      const t = k / 6, rad = 1.75 * (1 - t * 0.82), h = 1.5 - t * 0.55;
-      const g = new THREE.ConeGeometry(rad, h, 14, 3, true);
-      const p = g.attributes.position;
-      for (let i = 0; i < p.count; i++) {
-        const x = p.getX(i), y = p.getY(i), z = p.getZ(i), d = Math.hypot(x, z);
-        if (d < 1e-4) continue;
-        const a = Math.atan2(z, x), j = 0.78 + 0.32 * r(Math.round(a * 7) + k * 31);
-        const low = THREE.MathUtils.clamp(0.5 - y / h, 0, 1);       // untere Kante hängt durch
-        p.setXYZ(i, x * j, y - low * low * 0.35 * d, z * j);
-      }
-      g.translate(0, 1.1 + k * 0.78 + h / 2, 0);
-      return g;
-    });
-    const trunk = new THREE.CylinderGeometry(0.08, 0.17, 2.2, 8, 1, true); trunk.translate(0, 1.1, 0);
-    const g = mergeGeometries([...tiers, trunk].map((x) => { x.deleteAttribute("uv"); return x; }));
-    g.computeVertexNormals();
-    return g;
-  }, []);
-  useEffect(() => {
-    const m = ref.current; if (!m) return;
-    const o = new THREE.Object3D();
-    spots.forEach(([x, z, s], i) => { o.position.set(x, 0, z); o.scale.setScalar(s); o.rotation.y = i; o.updateMatrix(); m.setMatrixAt(i, o.matrix); });
-    m.instanceMatrix.needsUpdate = true;
-    m.computeBoundingSphere();
-  }, [spots]);
-  return <instancedMesh ref={ref} args={[geo, undefined, spots.length]} frustumCulled={false}><meshStandardMaterial color="#0b1712" roughness={0.85} envMapIntensity={0.3} side={THREE.DoubleSide} /></instancedMesh>;
-}
-
 /** Spiegelnder, nasser Vorplatz – Spiegelung nur auf Desktop und nur, solange der Hero sichtbar ist. */
 function Plaza({ mobile }: { mobile: boolean }) {
   // nasser, glatter Beton ohne Fugen (Referenz) – Poly-Haven-Normalen/Rauheit geben feine Unruhe in der Spiegelung
@@ -244,8 +208,8 @@ function Plaza({ mobile }: { mobile: boolean }) {
         {mobile || !on ? (
           <meshStandardMaterial {...t} color="#0b0d14" roughness={0.3} metalness={0.55} normalScale={new THREE.Vector2(0.25, 0.25)} envMapIntensity={0.8} />
         ) : (
-          <MeshReflectorMaterial resolution={1024} mirror={0.9} mixBlur={0.7} mixStrength={5} mixContrast={1.15} blur={[260, 70]} depthScale={0}
-            normalMap={t.normalMap} normalScale={new THREE.Vector2(0.18, 0.18)} roughnessMap={t.roughnessMap} roughness={0.3} metalness={0.55} color="#0a0c12" envMapIntensity={0.25} />
+          <MeshReflectorMaterial resolution={1024} mirror={1} mixBlur={0.45} mixStrength={10} mixContrast={1.15} blur={[260, 70]} depthScale={0}
+            normalMap={t.normalMap} normalScale={new THREE.Vector2(0.18, 0.18)} roughnessMap={t.roughnessMap} roughness={0.2} metalness={0.6} color="#10131c" envMapIntensity={0.6} />
         )}
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position-y={-0.02}><planeGeometry args={[600, 600]} /><meshStandardMaterial color="#030407" roughness={0.9} /></mesh>
@@ -302,10 +266,10 @@ function Sculpture() {
   const ref = useRef<THREE.Group>(null);
   const top = FLOOR + 0.6, cy = top + 0.9;
   // leichtes Pendeln um die Ansicht aus Kapitel „Erlebnis“, minimales Schweben
-  useFrame(() => { if (ref.current) { const t = flight.time; ref.current.rotation.y = -0.85 + Math.sin(t * 0.3) * 0.14; ref.current.position.y = cy + Math.sin(t * 0.7) * 0.03; } });
+  useFrame(() => { if (ref.current) { const t = flight.time; ref.current.rotation.y = -0.1 + Math.sin(t * 0.3) * 0.14; ref.current.position.y = cy + Math.sin(t * 0.7) * 0.03; } });
   const m = useMemo(() => [
     new THREE.MeshPhysicalMaterial({ color: "#020308", metalness: 0.7, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 2.2 }),
-    new THREE.MeshPhysicalMaterial({ color: "#1d3dff", metalness: 0.35, roughness: 0.06, clearcoat: 1, emissive: new THREE.Color("#1438ff"), emissiveIntensity: 0.55, envMapIntensity: 2 }),
+    new THREE.MeshPhysicalMaterial({ color: "#0b1660", metalness: 0.75, roughness: 0.08, clearcoat: 1, emissive: new THREE.Color("#1438ff"), emissiveIntensity: 0.16, envMapIntensity: 2.4 }),
   ], []);
   const ring = useMemo(() => glow("#38b8ff", 4.2), []);
   const ring2 = useMemo(() => glow("#2f6bff", 1.6), []);
@@ -315,7 +279,7 @@ function Sculpture() {
       <mesh position-y={top + 0.004} rotation-x={-Math.PI / 2} material={ring}><ringGeometry args={[0.86, 0.99, 128]} /></mesh>
       <mesh position-y={top + 0.003} rotation-x={-Math.PI / 2}><circleGeometry args={[0.86, 96]} /><meshStandardMaterial color="#03040a" roughness={0.12} metalness={0.8} /></mesh>
       <mesh position-y={FLOOR + 0.02} rotation-x={-Math.PI / 2} material={ring2}><ringGeometry args={[1.1, 1.14, 128]} /></mesh>
-      <pointLight position={[0, top + 0.25, 0]} intensity={6} distance={3.2} decay={2} color="#3d8bff" />
+      <pointLight position={[0, top + 0.25, 0]} intensity={5} distance={2} decay={2} color="#3d8bff" />
       <group ref={ref} position-y={cy}>
         <mesh geometry={geo} material={m} scale={0.7} castShadow />
       </group>
@@ -367,7 +331,7 @@ export function Studio({ mobile }: { mobile: boolean }) {
       // Licht hinter den Lamellen: warm leuchtende Rückwand
       woodWall: new THREE.MeshBasicMaterial({ color: new THREE.Color("#ffb070").multiplyScalar(0.55) }),
       slat: new THREE.MeshStandardMaterial({ ...oakV, color: "#b98457", roughness: 0.8 }),
-      marble: new THREE.MeshStandardMaterial({ map: makeMarble(), roughness: 0.2, metalness: 0.05, color: "#b4b8c4" }),
+      marble: new THREE.MeshStandardMaterial({ map: makeMarble(), roughness: 0.38, metalness: 0.05, color: "#8a8f9e" }),
       floor: new THREE.MeshStandardMaterial({ ...floor, color: "#121318", roughness: 0.75, metalness: 0.25, envMapIntensity: 0.45 }),
       mullion: new THREE.MeshStandardMaterial({ color: "#030305", roughness: 0.3, metalness: 0.85 }),
       ceiling: new THREE.MeshStandardMaterial({ color: "#16171c", roughness: 0.7, metalness: 0.1, side: THREE.DoubleSide }),
@@ -392,7 +356,10 @@ export function Studio({ mobile }: { mobile: boolean }) {
       <group position-y={-SINK}>
       <pointLight position={[0.6, FLOOR + 1.6, -0.8]} intensity={6} distance={9} decay={2} color="#ffd2a0" />
       {/* Blau wäscht den Marmor von rechts, links bleibt warm (Referenz) */}
-      <pointLight position={[5.8, 3.4, -3.7]} intensity={20} distance={10} decay={2} color="#3f6bff" />
+      <pointLight position={[5.8, 3.4, -3.7]} intensity={13} distance={10} decay={2} color="#3f6bff" />
+      {/* Innenraum gut lesbar durch das Glas (Referenz): weiche, kühle Grundhelligkeit auf Augenhöhe */}
+      <pointLight position={[-1.0, CEIL - 0.6, 0.6]} intensity={7} distance={8} decay={2} color="#cfdcff" />
+      <pointLight position={[4.6, CEIL - 0.6, 0.6]} intensity={7} distance={8} decay={2} color="#cfdcff" />
       <pointLight position={[-3.6, CEIL - 0.9, -1.6]} intensity={12} distance={7} decay={2} color="#ffd2a0" />
 
 
@@ -459,7 +426,6 @@ export function Studio({ mobile }: { mobile: boolean }) {
 
       </group>
       <Peaks mobile={mobile} />
-      <Trees />
       <Plaza mobile={mobile} />
       <Dust count={mobile ? 250 : 600} />
     </group>
