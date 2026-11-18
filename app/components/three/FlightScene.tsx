@@ -133,7 +133,7 @@ function Flight() {
   const mobile = size.width < 768;
   const portrait = size.height > size.width;
   const [scene] = useState(() => new THREE.Scene());
-  const cam = useMemo(() => new THREE.PerspectiveCamera(40, 1, 0.1, 1300), []);
+  const cam = useMemo(() => new THREE.PerspectiveCamera(40, 1, 0.1, 3000), []);
   // Szene → (MSAA) → Bloom; Ergebnis liest die Unschärfe-Fläche als Textur
   const composer = useMemo(() => {
     const w = Math.max(2, Math.round(size.width * viewport.dpr)), h = Math.max(2, Math.round(size.height * viewport.dpr));
@@ -164,7 +164,7 @@ function Flight() {
     const stopHdri = applyHdri(gl, scene, mobile ? "night" : "night-2k", 0.32);
     // Schatten (nur Desktop): Mondlicht wirft den Pavillon auf den nassen Vorplatz
     gl.shadowMap.enabled = !mobile; gl.shadowMap.type = THREE.PCFSoftShadowMap;
-    scene.fog = new THREE.Fog("#111c44", 200, 1250); // nur leichte Luftperspektive: Gebirge bleibt klar lesbar
+    scene.fog = new THREE.Fog("#111c44", 300, 2600); // nur leichte Luftperspektive: Gebirge bleibt klar lesbar
     st.reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (isCapture()) document.documentElement.dataset.capture = "";
     // Shader vorab kompilieren, damit der erste Scroll nicht ruckelt

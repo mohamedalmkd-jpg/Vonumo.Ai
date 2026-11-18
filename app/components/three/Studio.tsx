@@ -1,11 +1,12 @@
 "use client";
 import { useFrame } from "@react-three/fiber";
-import { MeshReflectorMaterial, RoundedBox } from "@react-three/drei";
+import { MeshReflectorMaterial } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { makeFacetedV, makeVOutline } from "./env";
 import { flight } from "./flight";
 import { Model, preloadModels } from "./Models";
+import { PavilionModel } from "./Pavilion";
 import { pbrSet, tex } from "./pbr";
 import { makeMarble, makeScreen, makeSign, type ScreenKind } from "./textures";
 
@@ -35,7 +36,7 @@ function Sky() {
         #include <colorspace_fragment>
       }`,
   }), []);
-  return <mesh material={mat} frustumCulled={false}><sphereGeometry args={[950, 48, 24]} /></mesh>;
+  return <mesh material={mat} frustumCulled={false}><sphereGeometry args={[2600, 48, 24]} /></mesh>;
 }
 
 function Stars({ count }: { count: number }) {
@@ -43,7 +44,7 @@ function Stars({ count }: { count: number }) {
     const p = new Float32Array(count * 3), c = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const th = Math.random() * Math.PI * 2, y = 0.08 + Math.pow(Math.random(), 0.7) * 0.92, rr = Math.sqrt(1 - y * y);
-      p.set([Math.cos(th) * rr * 900, y * 900, Math.sin(th) * rr * 900], i * 3); // hinter dem Gebirge (sonst Sterne vor den Gipfeln)
+      p.set([Math.cos(th) * rr * 2500, y * 2500, Math.sin(th) * rr * 2500], i * 3); // hinter dem Gebirge (sonst Sterne vor den Gipfeln)
       const b = 0.25 + Math.pow(Math.random(), 3) * 1.1; c.set([b * 0.88, b * 0.93, b * 1.08], i * 3);
     }
     const g = new THREE.BufferGeometry();
@@ -53,32 +54,9 @@ function Stars({ count }: { count: number }) {
   return <points geometry={geo} frustumCulled={false}><pointsMaterial size={1} sizeAttenuation={false} vertexColors fog={false} transparent opacity={0.9} toneMapped={false} /></points>;
 }
 
-/** Wertrauschen + „ridged“ fbm für Gebirgskämme (deterministisch). */
-function hash2(x: number, y: number) { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); }
-function vnoise(x: number, y: number) {
-  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
-  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
-  const a = hash2(xi, yi), b = hash2(xi + 1, yi), c = hash2(xi, yi + 1), d = hash2(xi + 1, yi + 1);
-  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-}
-function fbm(x: number, y: number) {
-  let f = 0, amp = 0.5, fr = 1;
-  for (let o = 0; o < 5; o++) { f += vnoise(x * fr, y * fr) * amp; amp *= 0.5; fr *= 2.07; }
-  return f;
-}
-function ridged(x: number, y: number) {
-  let f = 0, amp = 0.55, fr = 1, w = 1;
-  for (let o = 0; o < 6; o++) {
-    let n = 1 - Math.abs(vnoise(x * fr, y * fr) * 2 - 1);
-    n = n * n * w; w = Math.min(1, n * 1.6);
-    f += n * amp; amp *= 0.5; fr *= 2.03;
-  }
-  return f;
-}
 
 /**
- * Gebirge als echtes Höhenfeld (statt Kegeln): Kämme aus „ridged“ Rauschen, nach hinten höher.
- * Material: echte Fels- und Schneetexturen (Poly Haven) triplanar projiziert – Farbe UND Normalen –,
+ * Gebirgsmaterial: echte Fels- und Schneetexturen (Poly Haven) triplanar projiziert – Farbe UND Normalen –,
  * Schnee nach Höhe und Neigung (steile Flanken bleiben Fels).
  */
 const TERRAIN_VERT_HEAD = `attribute float snow; varying float vSnow; varying vec3 vWP; varying vec3 vWN;`;
@@ -105,7 +83,7 @@ function terrainMaterial() {
       .replace("#include <map_fragment>", `
         vec3 tw = triW(normalize(vWN)); vec3 tp = vWP / 28.;
         vec3 rockC = tri(tRock, tp, tw) * vec3(0.36, 0.42, 0.6);     // Fels im Mondlicht: kühl, nicht braun
-        vec3 snowC = tri(tSnow, tp * 0.6, tw) * vec3(0.9, 0.94, 1.04);
+        vec3 snowC = tri(tSnow, tp * 0.6, tw) * vec3(0.55, 0.6, 0.72);
         diffuseColor.rgb = mix(rockC, snowC, vSnow);`)
       .replace("#include <roughnessmap_fragment>", `#include <roughnessmap_fragment>\nroughnessFactor = mix(0.94, 0.62, vSnow);`)
       .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
@@ -116,35 +94,62 @@ function terrainMaterial() {
   return m;
 }
 
+/*
+ * Echtes Gelände: Walliser Alpen (Zermatt, Monte Rosa) aus offenen Höhendaten (AWS Terrain Tiles, Mapzen/SRTM),
+ * 512×342 Proben ≈ 80 m, 16 bit in R/G von public/terrain/alps.png (1216–4520 m).
+ * Maßstab 0,046 Einheiten/m: Band am Horizont, Süden (höchste Grate) hinten.
+ */
+function hash2(x: number, y: number) { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); }
+
+const DEM = { url: "/terrain/alps.png", lo: 1215.6, hi: 4520.3, w: 1900, z0: -640 } as const;
+
+async function loadHeights(): Promise<{ data: Float32Array; cols: number; rows: number }> {
+  const blob = await (await fetch(DEM.url)).blob();
+  const bmp = await createImageBitmap(blob, { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+  const c = document.createElement("canvas"); c.width = bmp.width; c.height = bmp.height;
+  const x = c.getContext("2d", { willReadFrequently: true })!; x.drawImage(bmp, 0, 0);
+  const px = x.getImageData(0, 0, c.width, c.height).data, data = new Float32Array(c.width * c.height);
+  for (let i = 0; i < data.length; i++) data[i] = DEM.lo + ((px[i * 4] * 256 + px[i * 4 + 1]) / 65535) * (DEM.hi - DEM.lo);
+  return { data, cols: c.width, rows: c.height };
+}
+
 function Peaks({ mobile }: { mobile: boolean }) {
   const mat = useMemo(terrainMaterial, []);
-  const geo = useMemo(() => {
-    // Referenz: weit entfernte, zackige Alpenkette als Band hinter dem Pavillon (nicht ein naher Fels)
-    const segX = mobile ? 360 : 760, segZ = mobile ? 50 : 110;
-    const g = new THREE.PlaneGeometry(1900, 340, segX, segZ);
-    g.rotateX(-Math.PI / 2);
-    g.translate(0, 0, -560); // z ≈ −390 … −730: Band am Horizont, wie in der Referenz
-    const p = g.attributes.position;
-    for (let i = 0; i < p.count; i++) {
-      const x = p.getX(i), z = p.getZ(i);
-      const back = THREE.MathUtils.smoothstep(-z, 395, 480);        // vorne flach, hinten hoch
-      const ridgeLine = 0.72 + 0.28 * Math.sin(x * 0.009 + 1.3);    // Kammverlauf variiert
-      // große Massive (fbm) × Grate (ridged) → Alpenkette statt einzelner Felsnadeln
-      const massif = THREE.MathUtils.clamp((fbm(x * 0.0042 + 7.3, z * 0.0042 + 2.1) - 0.2) / 0.45, 0, 1);
-      const ridge = THREE.MathUtils.clamp(ridged(x * 0.013 + 3.1, z * 0.013 - 1.7) / 1.1, 0, 1);
-      const h = Math.pow(massif, 1.15) * (0.5 + 0.5 * ridge);
-      p.setY(i, -4 + h * 175 * back * ridgeLine);
-    }
-    g.computeVertexNormals();
-    const n = g.attributes.normal, snow = new Float32Array(p.count);
-    for (let i = 0; i < p.count; i++) {
-      const y = p.getY(i), ny = n.getY(i);
-      snow[i] = THREE.MathUtils.smoothstep(y + (hash2(p.getX(i), p.getZ(i)) - 0.5) * 18, 34, 66) * THREE.MathUtils.smoothstep(ny, 0.22, 0.55);
-    }
-    g.setAttribute("snow", new THREE.BufferAttribute(snow, 1));
-    return g;
+  const [geo, setGeo] = useState<THREE.BufferGeometry | null>(null);
+  useEffect(() => {
+    let alive = true;
+    loadHeights().then(({ data, cols, rows }) => {
+      if (!alive) return;
+      const step = mobile ? 2 : 1, gx = Math.floor((cols - 1) / step), gz = Math.floor((rows - 1) / step);
+      const depth = DEM.w * (rows / cols); // gleicher Maßstab in x und z (≈0,046 Einheiten pro Meter)
+      const g = new THREE.PlaneGeometry(DEM.w, depth, gx, gz);
+      g.rotateX(-Math.PI / 2);
+      g.translate(0, 0, DEM.z0 - depth / 2);
+      const p = g.attributes.position;
+      for (let iz = 0; iz <= gz; iz++) for (let ix = 0; ix <= gx; ix++) {
+        const i = iz * (gx + 1) + ix;
+        // Blick nach Süden-Nord gespiegelt: die hohen Grate (Monte Rosa, Matterhorn) liegen vorne im Band
+        const r = Math.min(rows - 1, (gz - iz) * step), c = Math.min(cols - 1, (gx - ix) * step);
+        const hm = data[r * cols + c];
+        const u = ix / gx, v = iz / gz;
+        const fade = THREE.MathUtils.smoothstep(v, 0.0, 0.12) * THREE.MathUtils.smoothstep(u, 0, 0.08) * THREE.MathUtils.smoothstep(1 - u, 0, 0.08);
+        const y = (hm - 1900) * 0.046 * 1.8; // Meter → Einheiten; Überhöhung 1,8 = Tele-Wirkung des Referenzbilds
+        p.setY(i, Math.max(y, -6) * fade - 6 * (1 - fade));
+      }
+      g.computeVertexNormals();
+      const n = g.attributes.normal, snow = new Float32Array(p.count);
+      for (let i = 0; i < p.count; i++) {
+        const y = p.getY(i), ny = n.getY(i);
+        // Schneegrenze ≈ 2900 m → (2900−1700)·0,046 ≈ 55 Einheiten; steile Flanken bleiben Fels
+        snow[i] = THREE.MathUtils.smoothstep(y + (hash2(p.getX(i), p.getZ(i)) - 0.5) * 10, 70, 110) * THREE.MathUtils.smoothstep(ny, 0.3, 0.62);
+      }
+      g.setAttribute("snow", new THREE.BufferAttribute(snow, 1));
+      setGeo(g);
+    }).catch(() => {});
+    return () => { alive = false; };
   }, [mobile]);
-  return <mesh geometry={geo} material={mat} receiveShadow={false} />;
+  useEffect(() => () => geo?.dispose(), [geo]);
+  return geo ? <mesh geometry={geo} material={mat} /> : null;
 }
 
 /** Spot von der Decke senkrecht nach unten: echte Lichtinseln auf Podest und nassem Boden. */
@@ -163,24 +168,11 @@ function WallLogo({ position }: { position: [number, number, number] }) {
   const outline = useMemo(() => makeVOutline(0.075), []);
   return (
     <group position={position}>
-      <mesh position-y={-0.2}><boxGeometry args={[1.25, 2.6, 0.06]} /><meshStandardMaterial color="#0a0b10" roughness={0.35} metalness={0.6} /></mesh>
       <mesh geometry={outline} position={[0, 0.25, 0.035]} scale={0.36}><meshBasicMaterial color={new THREE.Color("#eef2ff").multiplyScalar(2.2)} toneMapped={false} /></mesh>
     </group>
   );
 }
 
-/** Senkrechte Eichenlamellen mit warmem Licht dahinter (Referenz: linke Innenwand). */
-function SlatWall({ x, z0, z1, y0, h, mat, mobile }: { x: number; z0: number; z1: number; y0: number; h: number; mat: THREE.Material; mobile: boolean }) {
-  const ref = useRef<THREE.InstancedMesh>(null);
-  const pitch = 0.11, n = Math.floor((z1 - z0) / pitch);
-  useEffect(() => {
-    const m = ref.current; if (!m) return;
-    const o = new THREE.Object3D();
-    for (let i = 0; i < n; i++) { o.position.set(x, y0 + h / 2, z0 + pitch * (i + 0.5)); o.updateMatrix(); m.setMatrixAt(i, o.matrix); }
-    m.instanceMatrix.needsUpdate = true; m.computeBoundingSphere();
-  }, [n, x, z0, y0, h]);
-  return <instancedMesh ref={ref} args={[undefined, mat, n]} castShadow={!mobile} receiveShadow><boxGeometry args={[0.06, h, 0.05]} /></instancedMesh>;
-}
 
 /** Sichtbare Lichtkegel unter Leuchten (additiv, weich zum Rand und nach unten ausblendend). */
 function LightCone({ position, color = "#ffcf9a", radius = 0.9, height = 2.4, strength = 0.12 }: { position: [number, number, number]; color?: string; radius?: number; height?: number; strength?: number }) {
@@ -237,13 +229,8 @@ preloadModels(["sofa_02", "coffee_table_round_01", "mid_century_lounge_chair", "
 
 /** Arbeitsplatz, Lounge und Pflanzen: echte Modelle (Poly Haven) + Nussbaum-Tisch mit Fase. */
 function Furniture({ mobile }: { mobile: boolean }) {
-  const desk = useMemo(() => new THREE.MeshStandardMaterial({ ...pbrSet("walnut", ["diff"], [2, 1]), color: "#6b5a4d", roughness: 0.38, metalness: 0 }), []);
-  const leg = useMemo(() => new THREE.MeshStandardMaterial({ color: "#14151a", roughness: 0.3, metalness: 0.9 }), []);
   return (
     <group>
-      <RoundedBox args={[3.6, 0.06, 1.0]} radius={0.02} smoothness={3} position={[-2.0, FLOOR + 0.75, -2.2]} material={desk} castShadow receiveShadow />
-      <Box args={[0.04, 0.72, 0.86]} position={[-3.65, FLOOR + 0.36, -2.2]} mat={leg} />
-      <Box args={[0.04, 0.72, 0.86]} position={[-0.35, FLOOR + 0.36, -2.2]} mat={leg} />
       <Screen kind="ui" position={[-2.8, FLOOR + 1.12, -2.45]} rot={0.05} w={0.95} />
       <Screen kind="code" position={[-1.6, FLOOR + 1.12, -2.45]} rot={-0.05} w={0.95} />
       <Suspense fallback={null}>
@@ -318,22 +305,12 @@ function spillTex() {
 export function Studio({ mobile }: { mobile: boolean }) {
   const m = useMemo(() => {
     // Holz: echtes Eichenfurnier (Farbe/Normalen/Rauheit), Sockel: Betonplatten – Poly Haven, CC0
-    const oak = pbrSet("oak", ["diff", "nor", "rough"], [7, 5]);
-    const oakV = pbrSet("oak", ["diff", "nor", "rough"], [0.05, 1.2], true);
-    const slab = pbrSet("slab", ["diff", "nor"], [4, 1]);
     const floor = pbrSet("floor", ["nor", "rough"], [4, 3]);
     return {
-      plinth: new THREE.MeshStandardMaterial({ ...slab, roughness: 0.7, metalness: 0.15, color: "#2a2d36" }),
-      charcoal: new THREE.MeshStandardMaterial({ color: "#0c0d12", roughness: 0.5, metalness: 0.35 }),
-      slab: new THREE.MeshStandardMaterial({ color: "#0b0c11", roughness: 0.35, metalness: 0.55 }),
-      fascia: new THREE.MeshStandardMaterial({ color: "#20232c", roughness: 0.25, metalness: 0.85 }),
-      soffit: new THREE.MeshStandardMaterial({ ...oak, color: "#d39a6a", roughness: 1, metalness: 0, emissive: new THREE.Color("#ff9a55"), emissiveMap: oak.map, emissiveIntensity: 0.16 }),
       // Licht hinter den Lamellen: warm leuchtende Rückwand
       woodWall: new THREE.MeshBasicMaterial({ color: new THREE.Color("#ffb070").multiplyScalar(0.55) }),
-      slat: new THREE.MeshStandardMaterial({ ...oakV, color: "#b98457", roughness: 0.8 }),
       marble: new THREE.MeshStandardMaterial({ map: makeMarble(), roughness: 0.38, metalness: 0.05, color: "#8a8f9e" }),
       floor: new THREE.MeshStandardMaterial({ ...floor, color: "#121318", roughness: 0.75, metalness: 0.25, envMapIntensity: 0.45 }),
-      mullion: new THREE.MeshStandardMaterial({ color: "#030305", roughness: 0.3, metalness: 0.85 }),
       ceiling: new THREE.MeshStandardMaterial({ color: "#16171c", roughness: 0.7, metalness: 0.1, side: THREE.DoubleSide }),
       glass: new THREE.MeshPhysicalMaterial({ color: "#dfe5ff", roughness: 0.02, metalness: 0, transparent: true, opacity: 0.05, envMapIntensity: 0.35, specularIntensity: 1, side: THREE.DoubleSide, depthWrite: false }),
       blue: glow("#3d7bff", 2.6), ledBlue: glow("#3d7bff", 4.5), warm: glow("#ffe2bd", 1.6), white: glow("#ffd6a0", 2.6),
@@ -344,7 +321,6 @@ export function Studio({ mobile }: { mobile: boolean }) {
 
   const W = RIGHT - LEFT, D = FRONT - BACK, H = CEIL - FLOOR, cx = (LEFT + RIGHT) / 2, cz = (FRONT + BACK) / 2;
   const glassL = -3.2;
-  const mullions = useMemo(() => { const n = 6, out: number[] = []; for (let i = 0; i <= n; i++) out.push(glassL + ((RIGHT - glassL) * i) / n); return out; }, []);
 
   return (
     <group>
@@ -366,16 +342,11 @@ export function Studio({ mobile }: { mobile: boolean }) {
 
 
       {/* Sockel mit Stufe und Neonfugen */}
-      <Box args={[13.6, FLOOR - 0.15, 8.6]} position={[cx + 0.1, (FLOOR - 0.15) / 2, cz + 0.2]} mat={m.plinth} />
-      <Box args={[12, 0.3, 1.1]} position={[cx + 0.4, SINK + 0.15, FRONT + 1.45]} mat={m.charcoal} />
       {/* Blaues LED-Band am Fuß der unteren Stufe + Lichtschein auf dem nassen Boden (Referenz) */}
       <Box args={[12, 0.045, 0.03]} position={[cx + 0.4, SINK + 0.03, FRONT + 2.02]} mat={m.ledBlue} />
       <mesh position={[cx + 0.4, SINK + 0.006, FRONT + 2.75]} rotation-x={-Math.PI / 2} material={m.spill}><planeGeometry args={[13, 1.5]} /></mesh>
       <Box args={[13.6, 0.035, 0.035]} position={[cx + 0.1, FLOOR - 0.16, FRONT + 0.65]} mat={m.blue} />
       {/* Bodenplatte & Dach */}
-      <Box args={[W + 0.6, 0.3, D + 1.2]} position={[cx, FLOOR - 0.15, cz + 0.6]} mat={m.slab} />
-      <Box args={[W + 2.2, 0.42, D + 2.6]} position={[cx + 0.3, CEIL + 0.21, cz + 1.0]} mat={m.fascia} />
-      <mesh position={[cx + 0.3, CEIL - 0.005, cz + 1.0]} rotation-x={Math.PI / 2} material={m.soffit}><planeGeometry args={[W + 2.2, D + 2.6]} /></mesh>
       {/* warmweiße LED-Linie an der Unterkante des Dachrands, rundum (Referenz) */}
       <Box args={[W + 2.2, 0.035, 0.035]} position={[cx + 0.3, CEIL - 0.02, FRONT + 2.29]} mat={m.white} />
       <Box args={[0.035, 0.035, D + 2.6]} position={[cx + 0.3 - (W + 2.2) / 2 + 0.02, CEIL - 0.02, cz + 1.0]} mat={m.white} />
@@ -383,19 +354,16 @@ export function Studio({ mobile }: { mobile: boolean }) {
       {/* Innendecke dunkel mit Downlights (Referenz), Holz nur am Vordach */}
       <mesh position={[cx, CEIL - 0.03, cz]} rotation-x={Math.PI / 2} material={m.ceiling}><planeGeometry args={[W - 0.5, D - 0.3]} /></mesh>
       {[-3.6, -1.2, 1.2, 3.6, 5.6].flatMap((x) => [-3.2, -0.6, 1.8].map((z) => (
-        <mesh key={`dl${x}${z}`} position={[x, CEIL - 0.04, z]} rotation-x={Math.PI / 2} material={m.warm}><circleGeometry args={[0.05, 16]} /></mesh>
+        <mesh key={`dl${x}${z}`} position={[x, CEIL - 0.043, z]} rotation-x={Math.PI / 2} material={m.warm}><circleGeometry args={[0.05, 16]} /></mesh>
       )))}
       {Array.from({ length: 9 }, (_, i) => (
         <mesh key={i} position={[LEFT + 0.6 + i * 1.5, CEIL - 0.012, FRONT + 1.1]} rotation-x={Math.PI / 2} material={m.warm}><circleGeometry args={[0.075, 20]} /></mesh>
       ))}
 
       {/* Front links: dunkle Wand mit hinterleuchtetem Schriftzug; Seitenwand */}
-      <Box args={[glassL - LEFT, H, 0.5]} position={[(LEFT + glassL) / 2, FLOOR + H / 2, FRONT]} mat={m.charcoal} />
       <mesh position={[(LEFT + glassL) / 2, FLOOR + H * 0.62, FRONT + 0.26]} material={m.sign}><planeGeometry args={[2.2, 0.55]} /></mesh>
-      <Box args={[0.5, H, D]} position={[LEFT, FLOOR + H / 2, cz]} mat={m.charcoal} />
       {/* Rückwand: Marmor */}
-      <Box args={[W, H, 0.3]} position={[cx, FLOOR + H / 2, BACK]} mat={m.marble} />
-      <WallLogo position={[0.4, FLOOR + 1.5, BACK + 0.18]} />
+      <WallLogo position={[0.4, FLOOR + 1.5, BACK + 0.185]} />
       {(mobile ? [3, 6] : [1, 3, 5, 7]).map((i) => {
         const x = LEFT + 0.6 + i * 1.5;
         return (
@@ -407,7 +375,6 @@ export function Studio({ mobile }: { mobile: boolean }) {
       })}
       {/* Innen: Holzlamellen links, Boden, Deckenvouten */}
       <mesh position={[LEFT + 0.26, FLOOR + H / 2, cz]} rotation-y={Math.PI / 2} material={m.woodWall}><planeGeometry args={[D, H]} /></mesh>
-      <SlatWall x={LEFT + 0.36} z0={BACK + 0.2} z1={FRONT - 0.3} y0={FLOOR} h={H - 0.08} mat={m.slat} mobile={mobile} />
       <mesh rotation-x={-Math.PI / 2} position={[cx, FLOOR + 0.005, cz]} material={m.floor} receiveShadow><planeGeometry args={[W, D]} /></mesh>
       {/* warme Vouten-Linien an Rück- und Lamellenwand (Referenz) */}
       <Box args={[W - 0.6, 0.03, 0.03]} position={[cx, CEIL - 0.06, BACK + 0.22]} mat={m.white} />
@@ -415,10 +382,10 @@ export function Studio({ mobile }: { mobile: boolean }) {
 
       {/* Glasfront + Pfosten, Glas rechts */}
       <mesh position={[(glassL + RIGHT) / 2, FLOOR + H / 2, FRONT]} material={m.glass}><planeGeometry args={[RIGHT - glassL, H]} /></mesh>
-      {mullions.map((x, i) => <Box key={i} args={[0.07, H, 0.12]} position={[x, FLOOR + H / 2, FRONT]} mat={m.mullion} />)}
       <mesh position={[RIGHT, FLOOR + H / 2, cz]} rotation-y={Math.PI / 2} material={m.glass}><planeGeometry args={[D, H]} /></mesh>
-      <Box args={[0.08, H, 0.08]} position={[RIGHT, FLOOR + H / 2, BACK]} mat={m.mullion} />
 
+      {/* Detailliertes Architekturmodell (Blender, scripts/blender/pavilion.py) mit gebackener Umgebungsverdeckung */}
+      <Suspense fallback={null}><PavilionModel mobile={mobile} marble={m.marble} /></Suspense>
       {/* Wandbildschirme */}
       <Screen kind="brand" position={[5.2, 4.05, BACK + 0.2]} rot={0} w={2.0} />
       <Screen kind="3d" position={[RIGHT - 0.12, 4.0, -1.4]} rot={-Math.PI / 2} w={1.7} />
