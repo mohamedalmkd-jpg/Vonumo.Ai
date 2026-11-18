@@ -1,7 +1,25 @@
 # VONUMO AI — Toolchain inventory
 
-Audited 2026-11-17 in the cloud development environment. ✅ = verified working here · 🔌 = connected service (authenticated) · ⏳ = needs access/credentials · ⏸ = deliberately not installed (add when a task needs it) · ❌ = not available here.
-Kinds: **npm** package · **skill** (Claude Code skill) · **MCP** server · **CLI** tool · **app** (desktop software) · **service** (paid/external account).
+**Re-verified 2026-11-18** with real calls (not just installed packages). Cloud environment: **„Vonumo.Ai“** (personal), which allows `prod.spline.design`, `api.dev.runwayml.com`, `api.polyhaven.com` and `dl.polyhaven.org` in addition to the package registries.
+
+## Core toolchain (owner brief, 2026-11-18)
+| Tool | Kind | Status | Verified by |
+|---|---|---|---|
+| Figma | MCP (official) | 🔌 connected, **read-only** | `whoami`: account "Mo Hans", Starter plan, **View seat**. Reading designs works; writing into Figma files needs a Full/Dev seat (owner decision) |
+| Framer | MCP (official) | 🔌 connected | `list_projects` + `open_project` on "Welcomed Blackberry": session opens, tree/API available. Nothing modified |
+| Spline | npm runtime + web app | ⚠️ partly | No official MCP exists. `@splinetool/runtime` 2.0 / `@splinetool/react-spline` 4.2 installable; `prod.spline.design` reachable. **Needs:** a scene built in the owner's Spline account, exported as a public scene URL (or GLB). Spline has no API to create scenes |
+| Three.js + R3F + drei | npm | ✅ | three 0.187, R3F 9.8, drei 10.7; production build passes |
+| GSAP + ScrollTrigger + @gsap/react | npm | ✅ | gsap 3.15, @gsap/react 2.1 |
+| Lenis | npm | ✅ | lenis 1.3 (one scroll loop via gsap.ticker) |
+| Runway | REST API (SDK `@runwayml/sdk`) | ⏳ key invalid | Host reachable; key saved via the secure form is **rejected by Runway** ("must start with `key_`"). Owner: create an API key at dev.runwayml.com (API Keys) and save it again. Every generation costs Runway credits, so only with approval |
+| FFmpeg | CLI | ✅ | 6.1; AV1 (svt/aom), VP9, H.264, WebP, AVIF encoders |
+| Playwright | CLI + lib | ✅ | 1.63, Chromium launches. Software GL only (no GPU), see CLAUDE.md |
+| GitHub | MCP + git | 🔌 | `get_me`: mohamedalmkd-jpg. Push to feature branches works |
+| Vercel | MCP | 🔌 | Preview deploys of `vonumo-v2` from feature branches work. Production is never touched without approval |
+| Poly Haven | HTTP API | ✅ | `api.polyhaven.com` 200; HDRI download verified (moonless_golf 1k). 4K/8K HDRIs and PBR textures can now be fetched |
+| Awwwards / CSS Design Awards | websites | ⚠️ | Not on the network allowlist. Study references the owner sends (URLs, recordings); add a host only for a concrete reference |
+
+## Earlier inventory (2026-11-17)
 
 ## A. Design intelligence & skills
 | Tool | Kind | Status | Notes |

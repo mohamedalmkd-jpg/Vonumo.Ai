@@ -24,7 +24,20 @@ Never finish substantial visual work without the available verification steps.
 - **Full tool inventory (npm / skill / MCP / CLI / app / paid service, with verified status): `docs/toolchain.md`.** Re-audit and update it when tools change. Never claim a tool is connected unless verified.
 - Project skills (auto-loaded): **`vonumo-workflow`** (standard workflow + QA gate, use for every visual task), **`frontend-design`** (Anthropic, creative direction), **`reanimate`** (reference cloning + frame-by-frame verification).
 - QA commands: `npm run qa:visual` (pixel diff vs `tests/visual/baseline`), `npm run qa:lighthouse` / `qa:lighthouse:mobile`. Accessibility, Best Practices and SEO must stay at 100. Update baselines (`qa:visual:update`) only for intended changes.
-- Connected services: Figma MCP (View seat, so read-only), Framer MCP, GitHub, Vercel (`vonumo-v2` previews). Still need access: Spline, Krea, Magnific, Topaz, Adobe apps, Cloudinary, Supabase.
+- Connected services (verified 2026-11-18): Figma MCP (View seat, so read-only), Framer MCP, GitHub, Vercel (`vonumo-v2` previews), Poly Haven API. Still need owner action: Runway (valid API key), Spline (scene URL), Krea, Magnific, Topaz, Adobe apps, Cloudinary, Supabase.
+
+### Permanent production rules (owner brief, 2026-11-18)
+- **Verified toolchain:** `docs/toolchain.md` (re-verified 2026-11-18). Ready: Three/R3F/drei, GSAP+ScrollTrigger, Lenis, FFmpeg, Playwright, GitHub, Vercel previews, Poly Haven, Framer MCP. Figma MCP is read-only (View seat). Spline needs an owner-made scene URL. Runway needs a valid `key_…` API key.
+- **Branches & deploys:** every redesign is done on its own branch (`claude/<topic>`) with a Vercel **preview** of `vonumo-v2`. Never deploy to production or merge into the production branch without the owner's explicit approval.
+- **Paid services and credentials** (Runway credits, Figma AI, Krea, Magnific, Topaz, Cloudinary): ask first. Keys only via the secure credential form, never in chat or code.
+- **Asset-production plan before building:** for each section, list every asset, its source (procedural / Poly Haven / owner-supplied / Runway / Spline / Blender), resolution and format, and what is missing.
+- **Image → scene decision** for every owner image:
+  1. Camera must travel *through or around* it → **genuine 3D reconstruction** (R3F geometry, PBR, HDRI, real lights and shadows). List the geometry and views a single image can't show.
+  2. Maximum realism without interaction → **image-to-video** (Runway, with approval) or an offline-rendered film (`scripts/render-reel.cjs`).
+  3. Subtle depth only → layered composition or shaders. **Never call 2.5D or zoom "3D".**
+- **References:** study award-level sites and the owner's references for composition, typography, transitions, 3D, hover/pointer, scroll storytelling, easing and mobile gestures. Reproduce interaction patterns with original or licensed assets and code only.
+- **Section-by-section:** analyse the reference → build one section → render it (Playwright) → compare side by side → fix → test desktop and mobile separately → only then the next section.
+- **One art-directed system:** hero, navigation, transitions, hover/cursor/touch, cards, buttons and 3D must feel like one experience. No random effects, generic AI layouts or clutter. Accessibility (Lighthouse a11y 100) and conversion stay intact.
 
 ### The five design systems (apply whenever relevant)
 | # | System | What it means here | Tool status (re-checked 2026-11-17) |

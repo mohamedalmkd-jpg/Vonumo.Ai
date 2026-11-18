@@ -12,6 +12,10 @@ Follow **ANALYZE → DESIGN → BUILD → ANIMATE → RENDER → TEST → COMPAR
 - **Reference images:** crop the relevant frames and note composition, light, type, spacing and colour. Check resolution: low-res collages are not final assets, so ask for originals.
 - Write or update a spec (`docs/animation-spec.md`) when motion matters.
 
+## 1b. Asset-production plan (before any build)
+Write a short table: asset → method (procedural R3F / Poly Haven HDRI+PBR / owner image / Runway image-to-video* / Spline scene* / offline film) → resolution and format → status (ready / missing / needs approval). Items marked * need owner credentials or approval.
+Image → scene: if the camera travels through or around it, build **real 3D**. For maximum realism without interaction, use video. For subtle depth only, use layers or shaders. Never present 2.5D as 3D.
+
 ## 2. Design
 - Apply the **frontend-design** skill's principles (distinct, not templated) inside the VONUMO language: night studio, Outfit, blue/violet light edges, warm wood light.
 - Choose the technique per need: photo/video sequence for maximum realism; R3F for interaction; DOM + GSAP for type and layout.
@@ -37,4 +41,4 @@ npm run qa:lighthouse        # Accessibility / Best Practices / SEO must stay 10
 - Report honestly: what was verified, what could not be (software GL: fps and Lighthouse performance are not real-device values), and which assets or credentials are still needed.
 
 ## 6. Ship
-Commit on the working branch, push, and deploy a Vercel preview (`vonumo-v2`) when the owner wants a link. Confirm the deployment is READY and the page loads before sharing it.
+Work on a dedicated branch (`claude/<topic>`). Commit, push and deploy a Vercel **preview** (`vonumo-v2`). Never production without the owner's approval. Confirm the deployment is READY and the page loads before sharing it.
