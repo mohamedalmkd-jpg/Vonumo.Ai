@@ -4,7 +4,7 @@ import { MeshReflectorMaterial, RoundedBox } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import * as THREE from "three";
-import { makeVGeometry } from "./env";
+import { makeFacetedV, makeVOutline } from "./env";
 import { flight } from "./flight";
 import { Model, preloadModels } from "./Models";
 import { pbrSet, tex } from "./pbr";
@@ -28,9 +28,9 @@ function Sky() {
     fragmentShader: `varying vec3 vP;
       void main(){
         float h = vP.y;
-        vec3 top = vec3(0.004,0.006,0.02), hor = vec3(0.05,0.07,0.2);
+        vec3 top = vec3(0.003,0.005,0.018), hor = vec3(0.035,0.065,0.21);
         vec3 col = mix(hor, top, smoothstep(-0.02, 0.5, h));
-        col += vec3(0.12,0.16,0.5) * exp(-abs(h-0.03)*18.0) * 0.5;
+        col += vec3(0.08,0.14,0.42) * exp(-abs(h-0.04)*14.0) * 0.45;
         gl_FragColor = vec4(col,1.);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
@@ -45,13 +45,13 @@ function Stars({ count }: { count: number }) {
     for (let i = 0; i < count; i++) {
       const th = Math.random() * Math.PI * 2, y = 0.08 + Math.pow(Math.random(), 0.7) * 0.92, rr = Math.sqrt(1 - y * y);
       p.set([Math.cos(th) * rr * 280, y * 280, Math.sin(th) * rr * 280], i * 3);
-      const b = 0.4 + Math.random() * 0.9; c.set([b * 0.85, b * 0.9, b * 1.1], i * 3);
+      const b = 0.25 + Math.pow(Math.random(), 3) * 1.1; c.set([b * 0.88, b * 0.93, b * 1.08], i * 3);
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(p, 3)); g.setAttribute("color", new THREE.BufferAttribute(c, 3));
     return g;
   }, [count]);
-  return <points geometry={geo} frustumCulled={false}><pointsMaterial size={1.1} sizeAttenuation={false} vertexColors fog={false} transparent opacity={0.9} toneMapped={false} /></points>;
+  return <points geometry={geo} frustumCulled={false}><pointsMaterial size={1} sizeAttenuation={false} vertexColors fog={false} transparent opacity={0.9} toneMapped={false} /></points>;
 }
 
 /** Wertrauschen + „ridged“ fbm für Gebirgskämme (deterministisch). */
@@ -99,13 +99,13 @@ function terrainMaterial() {
     sh.fragmentShader = sh.fragmentShader
       .replace("#include <common>", `#include <common>\n${TERRAIN_FRAG_HEAD}`)
       .replace("#include <map_fragment>", `
-        vec3 tw = triW(normalize(vWN)); vec3 tp = vWP / 16.;
-        vec3 rockC = tri(tRock, tp, tw) * vec3(0.42, 0.47, 0.62);     // Fels im Mondlicht: kühl, nicht braun
+        vec3 tw = triW(normalize(vWN)); vec3 tp = vWP / 28.;
+        vec3 rockC = tri(tRock, tp, tw) * vec3(0.36, 0.42, 0.6);     // Fels im Mondlicht: kühl, nicht braun
         vec3 snowC = tri(tSnow, tp * 0.6, tw) * vec3(0.9, 0.94, 1.04);
         diffuseColor.rgb = mix(rockC, snowC, vSnow);`)
       .replace("#include <roughnessmap_fragment>", `#include <roughnessmap_fragment>\nroughnessFactor = mix(0.94, 0.62, vSnow);`)
       .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
-        { vec3 wn0 = normalize(vWN); vec3 tw2 = triW(wn0); vec3 tp2 = vWP / 16.;
+        { vec3 wn0 = normalize(vWN); vec3 tw2 = triW(wn0); vec3 tp2 = vWP / 28.;
           vec3 wn = normalize(mix(triN(tRockN, tp2, tw2, wn0), triN(tSnowN, tp2 * 0.6, tw2, wn0), vSnow * 0.7));
           normal = normalize((viewMatrix * vec4(wn, 0.)).xyz); }`);
   };
@@ -115,23 +115,24 @@ function terrainMaterial() {
 function Peaks({ mobile }: { mobile: boolean }) {
   const mat = useMemo(terrainMaterial, []);
   const geo = useMemo(() => {
-    const segX = mobile ? 280 : 640, segZ = mobile ? 56 : 140;
-    const g = new THREE.PlaneGeometry(560, 170, segX, segZ);
+    // Referenz: weit entfernte, zackige Alpenkette als Band hinter dem Pavillon (nicht ein naher Fels)
+    const segX = mobile ? 360 : 760, segZ = mobile ? 50 : 110;
+    const g = new THREE.PlaneGeometry(1400, 240, segX, segZ);
     g.rotateX(-Math.PI / 2);
-    g.translate(0, 0, -150); // z ≈ −65 … −235
+    g.translate(0, 0, -370); // z ≈ −250 … −490
     const p = g.attributes.position;
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i), z = p.getZ(i);
-      const back = THREE.MathUtils.smoothstep(-z, 60, 150);         // vorne flach, hinten hoch
-      const ridgeLine = 0.75 + 0.25 * Math.sin(x * 0.018 + 1.3);    // Kammverlauf variiert
-      const h = THREE.MathUtils.clamp((ridged(x * 0.011 + 3.1, z * 0.011 - 1.7) - 0.12) / 0.55, 0, 1);
-      p.setY(i, -2 + Math.pow(h, 1.35) * 125 * back * ridgeLine);
+      const back = THREE.MathUtils.smoothstep(-z, 255, 345);        // vorne flach, hinten hoch
+      const ridgeLine = 0.72 + 0.28 * Math.sin(x * 0.009 + 1.3);    // Kammverlauf variiert
+      const h = THREE.MathUtils.clamp((ridged(x * 0.0085 + 3.1, z * 0.0085 - 1.7) - 0.1) / 0.55, 0, 1);
+      p.setY(i, -4 + Math.pow(h, 1.25) * 105 * back * ridgeLine);
     }
     g.computeVertexNormals();
     const n = g.attributes.normal, snow = new Float32Array(p.count);
     for (let i = 0; i < p.count; i++) {
       const y = p.getY(i), ny = n.getY(i);
-      snow[i] = THREE.MathUtils.smoothstep(y + (hash2(p.getX(i), p.getZ(i)) - 0.5) * 10, 16, 32) * THREE.MathUtils.smoothstep(ny, 0.42, 0.72);
+      snow[i] = THREE.MathUtils.smoothstep(y + (hash2(p.getX(i), p.getZ(i)) - 0.5) * 14, 26, 50) * THREE.MathUtils.smoothstep(ny, 0.4, 0.7);
     }
     g.setAttribute("snow", new THREE.BufferAttribute(snow, 1));
     return g;
@@ -150,23 +151,28 @@ function SpotDown({ position, intensity = 40, color = "#ffc590", angle = 0.75 }:
   return <><primitive object={light} /><primitive object={light.target} /></>;
 }
 
-/** Hinterleuchtetes V-Logo auf der Marmorwand (dunkles Metall + Lichtkranz dahinter). */
+/** Dunkles, eingelassenes Paneel in der Marmorwand mit leuchtender V-Kontur (Referenz: Innenraum). */
 function WallLogo({ position }: { position: [number, number, number] }) {
-  const geo = useMemo(makeVGeometry, []);
-  const halo = useMemo(() => {
-    const c = document.createElement("canvas"); c.width = c.height = 256;
-    const x = c.getContext("2d")!; const g = x.createRadialGradient(128, 128, 10, 128, 128, 128);
-    g.addColorStop(0, "rgba(190,205,255,0.9)"); g.addColorStop(0.35, "rgba(110,130,255,0.35)"); g.addColorStop(1, "rgba(80,100,255,0)");
-    x.fillStyle = g; x.fillRect(0, 0, 256, 256);
-    return new THREE.CanvasTexture(c);
-  }, []);
+  const outline = useMemo(() => makeVOutline(0.075), []);
   return (
     <group position={position}>
-      <mesh position-z={-0.02}><planeGeometry args={[2.4, 2.4]} /><meshBasicMaterial map={halo} transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} color={new THREE.Color(0.9, 0.9, 1.05)} /></mesh>
-      <mesh geometry={geo} scale={[0.42, 0.42, 0.05]}><meshPhysicalMaterial color="#0a0b10" metalness={0.9} roughness={0.2} clearcoat={1} envMapIntensity={1.4} /></mesh>
-      <mesh geometry={geo} scale={[0.435, 0.435, 0.02]} position-z={-0.03}><meshBasicMaterial color={new THREE.Color("#9fb2ff").multiplyScalar(3)} toneMapped={false} /></mesh>
+      <mesh position-y={-0.2}><boxGeometry args={[1.25, 2.6, 0.06]} /><meshStandardMaterial color="#0a0b10" roughness={0.35} metalness={0.6} /></mesh>
+      <mesh geometry={outline} position={[0, 0.25, 0.035]} scale={0.36}><meshBasicMaterial color={new THREE.Color("#eef2ff").multiplyScalar(2.2)} toneMapped={false} /></mesh>
     </group>
   );
+}
+
+/** Senkrechte Eichenlamellen mit warmem Licht dahinter (Referenz: linke Innenwand). */
+function SlatWall({ x, z0, z1, y0, h, mat, mobile }: { x: number; z0: number; z1: number; y0: number; h: number; mat: THREE.Material; mobile: boolean }) {
+  const ref = useRef<THREE.InstancedMesh>(null);
+  const pitch = 0.11, n = Math.floor((z1 - z0) / pitch);
+  useEffect(() => {
+    const m = ref.current; if (!m) return;
+    const o = new THREE.Object3D();
+    for (let i = 0; i < n; i++) { o.position.set(x, y0 + h / 2, z0 + pitch * (i + 0.5)); o.updateMatrix(); m.setMatrixAt(i, o.matrix); }
+    m.instanceMatrix.needsUpdate = true; m.computeBoundingSphere();
+  }, [n, x, z0, y0, h]);
+  return <instancedMesh ref={ref} args={[undefined, mat, n]} castShadow={!mobile} receiveShadow><boxGeometry args={[0.06, h, 0.05]} /></instancedMesh>;
 }
 
 /** Sichtbare Lichtkegel unter Leuchten (additiv, weich zum Rand und nach unten ausblendend). */
@@ -227,8 +233,8 @@ function Trees() {
 
 /** Spiegelnder, nasser Vorplatz – Spiegelung nur auf Desktop und nur, solange der Hero sichtbar ist. */
 function Plaza({ mobile }: { mobile: boolean }) {
-  // echte Steinplatten (Poly Haven): Fugen und Unebenheiten aus Normalen-/Rauheitskarte → nasse Spiegelung bricht realistisch
-  const t = useMemo(() => pbrSet("tiles", ["diff", "nor", "rough"], [40, 40]), []);
+  // nasser, glatter Beton ohne Fugen (Referenz) – Poly-Haven-Normalen/Rauheit geben feine Unruhe in der Spiegelung
+  const t = useMemo(() => pbrSet("floor", ["nor", "rough"], [45, 45]), []);
   const [on, setOn] = useState(true);
   useFrame(() => { if (flight.visible !== on) setOn(flight.visible); });
   return (
@@ -236,10 +242,10 @@ function Plaza({ mobile }: { mobile: boolean }) {
       <mesh rotation-x={-Math.PI / 2} position-y={0} receiveShadow>
         <planeGeometry args={[150, 150]} />
         {mobile || !on ? (
-          <meshStandardMaterial {...t} color="#16181f" roughness={0.42} metalness={0.25} normalScale={new THREE.Vector2(0.6, 0.6)} envMapIntensity={0.35} />
+          <meshStandardMaterial {...t} color="#0b0d14" roughness={0.3} metalness={0.55} normalScale={new THREE.Vector2(0.25, 0.25)} envMapIntensity={0.8} />
         ) : (
-          <MeshReflectorMaterial resolution={1024} mirror={0.85} mixBlur={0.25} mixStrength={3.2} mixContrast={1.1} blur={[70, 18]} depthScale={0}
-            map={t.map} normalMap={t.normalMap} normalScale={new THREE.Vector2(0.35, 0.35)} roughnessMap={t.roughnessMap} roughness={0.32} metalness={0.5} color="#14161d" envMapIntensity={0.12} />
+          <MeshReflectorMaterial resolution={1024} mirror={0.9} mixBlur={0.7} mixStrength={5} mixContrast={1.15} blur={[260, 70]} depthScale={0}
+            normalMap={t.normalMap} normalScale={new THREE.Vector2(0.18, 0.18)} roughnessMap={t.roughnessMap} roughness={0.3} metalness={0.55} color="#0a0c12" envMapIntensity={0.25} />
         )}
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position-y={-0.02}><planeGeometry args={[600, 600]} /><meshStandardMaterial color="#030407" roughness={0.9} /></mesh>
@@ -290,25 +296,28 @@ function Furniture({ mobile }: { mobile: boolean }) {
   );
 }
 
+/** V-Skulptur der Referenz: facettiert, schwarz glänzend mit blauen Glasfasen, schwebt über Sockel mit LED-Ring. */
 function Sculpture() {
-  const geo = useMemo(makeVGeometry, []);
+  const geo = useMemo(makeFacetedV, []);
   const ref = useRef<THREE.Group>(null);
-  // zeigt zur Kamera im Kapitel „Erlebnis“ und pendelt nur leicht (nie hochkant)
-  useFrame(() => { if (ref.current) { const t = flight.time; ref.current.rotation.y = -0.62 + Math.sin(t * 0.35) * 0.3; ref.current.position.y = 4.05 + Math.sin(t * 0.8) * 0.06; } });
-  const m = useMemo(() => ({
-    rim: new THREE.MeshBasicMaterial({ color: new THREE.Color("#7b6bff").multiplyScalar(2.4), side: THREE.BackSide, toneMapped: false }),
-    ring: glow("#4f8bff", 3), ring2: glow("#7b6bff", 2),
-  }), []);
+  const top = FLOOR + 0.6, cy = top + 0.9;
+  // leichtes Pendeln um die Ansicht aus Kapitel „Erlebnis“, minimales Schweben
+  useFrame(() => { if (ref.current) { const t = flight.time; ref.current.rotation.y = -0.85 + Math.sin(t * 0.3) * 0.14; ref.current.position.y = cy + Math.sin(t * 0.7) * 0.03; } });
+  const m = useMemo(() => [
+    new THREE.MeshPhysicalMaterial({ color: "#020308", metalness: 0.7, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 2.2 }),
+    new THREE.MeshPhysicalMaterial({ color: "#1d3dff", metalness: 0.35, roughness: 0.06, clearcoat: 1, emissive: new THREE.Color("#1438ff"), emissiveIntensity: 0.55, envMapIntensity: 2 }),
+  ], []);
+  const ring = useMemo(() => glow("#38b8ff", 4.2), []);
+  const ring2 = useMemo(() => glow("#2f6bff", 1.6), []);
   return (
     <group position={[2.4, 0, -2.6]}>
-      <mesh position-y={FLOOR + 0.3}><cylinderGeometry args={[1.05, 1.1, 0.6, 64]} /><meshStandardMaterial color="#0b0c12" roughness={0.2} metalness={0.8} /></mesh>
-      <mesh position-y={FLOOR + 0.605} rotation-x={-Math.PI / 2} material={m.ring}><ringGeometry args={[0.8, 0.98, 96]} /></mesh>
-      <mesh position-y={FLOOR + 0.02} rotation-x={-Math.PI / 2} material={m.ring2}><ringGeometry args={[1.12, 1.16, 96]} /></mesh>
-      <group ref={ref} position-y={4.05}>
-        <mesh geometry={geo} scale={0.72}>
-          <meshPhysicalMaterial color="#04050c" metalness={0.6} roughness={0.12} clearcoat={1} clearcoatRoughness={0.05} iridescence={0.5} iridescenceIOR={1.3} envMapIntensity={1.8} />
-        </mesh>
-        <mesh geometry={geo} scale={0.735} material={m.rim} />
+      <mesh position-y={FLOOR + 0.3} castShadow receiveShadow><cylinderGeometry args={[1.05, 1.08, 0.6, 96]} /><meshPhysicalMaterial color="#05060a" roughness={0.18} metalness={0.7} clearcoat={0.8} /></mesh>
+      <mesh position-y={top + 0.004} rotation-x={-Math.PI / 2} material={ring}><ringGeometry args={[0.86, 0.99, 128]} /></mesh>
+      <mesh position-y={top + 0.003} rotation-x={-Math.PI / 2}><circleGeometry args={[0.86, 96]} /><meshStandardMaterial color="#03040a" roughness={0.12} metalness={0.8} /></mesh>
+      <mesh position-y={FLOOR + 0.02} rotation-x={-Math.PI / 2} material={ring2}><ringGeometry args={[1.1, 1.14, 128]} /></mesh>
+      <pointLight position={[0, top + 0.25, 0]} intensity={6} distance={3.2} decay={2} color="#3d8bff" />
+      <group ref={ref} position-y={cy}>
+        <mesh geometry={geo} material={m} scale={0.7} castShadow />
       </group>
     </group>
   );
@@ -333,25 +342,38 @@ function Dust({ count }: { count: number }) {
   return <points geometry={geo} frustumCulled={false}><pointsMaterial size={0.035} color="#c8d2ff" transparent opacity={0.45} depthWrite={false} blending={THREE.AdditiveBlending} /></points>;
 }
 
+/** Weicher Verlauf: hell an der LED-Kante, nach vorne auslaufend (Lichtschein auf dem Boden). */
+function spillTex() {
+  const c = document.createElement("canvas"); c.width = 8; c.height = 128;
+  const x = c.getContext("2d")!; const g = x.createLinearGradient(0, 0, 0, 128);
+  g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.75, "rgba(255,255,255,0.35)"); g.addColorStop(1, "rgba(255,255,255,0.9)");
+  x.fillStyle = g; x.fillRect(0, 0, 8, 128);
+  return new THREE.CanvasTexture(c);
+}
+
 export function Studio({ mobile }: { mobile: boolean }) {
   const m = useMemo(() => {
     // Holz: echtes Eichenfurnier (Farbe/Normalen/Rauheit), Sockel: Betonplatten – Poly Haven, CC0
     const oak = pbrSet("oak", ["diff", "nor", "rough"], [7, 5]);
-    const oakV = pbrSet("oak", ["diff", "nor", "rough"], [3, 1.5]);
+    const oakV = pbrSet("oak", ["diff", "nor", "rough"], [0.05, 1.2], true);
     const slab = pbrSet("slab", ["diff", "nor"], [4, 1]);
     const floor = pbrSet("floor", ["nor", "rough"], [4, 3]);
     return {
-      plinth: new THREE.MeshStandardMaterial({ ...slab, roughness: 0.82, metalness: 0.05, color: "#8a8fa0" }),
+      plinth: new THREE.MeshStandardMaterial({ ...slab, roughness: 0.7, metalness: 0.15, color: "#2a2d36" }),
       charcoal: new THREE.MeshStandardMaterial({ color: "#0c0d12", roughness: 0.5, metalness: 0.35 }),
       slab: new THREE.MeshStandardMaterial({ color: "#0b0c11", roughness: 0.35, metalness: 0.55 }),
       fascia: new THREE.MeshStandardMaterial({ color: "#20232c", roughness: 0.25, metalness: 0.85 }),
       soffit: new THREE.MeshStandardMaterial({ ...oak, color: "#d39a6a", roughness: 1, metalness: 0, emissive: new THREE.Color("#ff9a55"), emissiveMap: oak.map, emissiveIntensity: 0.16 }),
-      woodWall: new THREE.MeshStandardMaterial({ ...oakV, color: "#c98f5e", roughness: 1, emissive: new THREE.Color("#ff9a55"), emissiveMap: oakV.map, emissiveIntensity: 0.1 }),
-      marble: new THREE.MeshStandardMaterial({ map: makeMarble(), roughness: 0.22, metalness: 0.05, color: "#80869a" }),
+      // Licht hinter den Lamellen: warm leuchtende Rückwand
+      woodWall: new THREE.MeshBasicMaterial({ color: new THREE.Color("#ffb070").multiplyScalar(0.55) }),
+      slat: new THREE.MeshStandardMaterial({ ...oakV, color: "#b98457", roughness: 0.8 }),
+      marble: new THREE.MeshStandardMaterial({ map: makeMarble(), roughness: 0.2, metalness: 0.05, color: "#b4b8c4" }),
       floor: new THREE.MeshStandardMaterial({ ...floor, color: "#121318", roughness: 0.75, metalness: 0.25, envMapIntensity: 0.45 }),
       mullion: new THREE.MeshStandardMaterial({ color: "#030305", roughness: 0.3, metalness: 0.85 }),
+      ceiling: new THREE.MeshStandardMaterial({ color: "#16171c", roughness: 0.7, metalness: 0.1, side: THREE.DoubleSide }),
       glass: new THREE.MeshPhysicalMaterial({ color: "#dfe5ff", roughness: 0.02, metalness: 0, transparent: true, opacity: 0.05, envMapIntensity: 0.35, specularIntensity: 1, side: THREE.DoubleSide, depthWrite: false }),
-      blue: glow("#4f7bff", 2.6), violet: glow("#8b6bff", 2.4), warm: glow("#ffd8a8", 1.6), white: glow("#ffb070", 2.0),
+      blue: glow("#3d7bff", 2.6), ledBlue: glow("#3d7bff", 4.5), warm: glow("#ffe2bd", 1.6), white: glow("#ffd6a0", 2.6),
+      spill: new THREE.MeshBasicMaterial({ map: spillTex(), color: new THREE.Color("#2f6bff").multiplyScalar(0.9), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }),
       sign: new THREE.MeshBasicMaterial({ map: makeSign("VONUMO"), transparent: true, toneMapped: false, color: new THREE.Color(2.4, 2.5, 2.8), depthWrite: false }),
     };
   }, []);
@@ -363,31 +385,38 @@ export function Studio({ mobile }: { mobile: boolean }) {
   return (
     <group>
       <Sky />
-      <Stars count={mobile ? 700 : 1600} />
-      <hemisphereLight args={["#24305e", "#020306", 0.4]} />
+      <Stars count={mobile ? 1800 : 4200} />
+      <hemisphereLight args={["#24305e", "#020306", 0.25]} />
       <directionalLight position={[-30, 40, 30]} intensity={2.2} color="#b8c4ff" castShadow={!mobile} shadow-mapSize={[2048, 2048]} shadow-bias={-0.0004} shadow-normalBias={0.03} shadow-camera-left={-16} shadow-camera-right={16} shadow-camera-top={16} shadow-camera-bottom={-16} shadow-camera-near={10} shadow-camera-far={110} />
       <directionalLight position={[12, 18, -40]} intensity={mobile ? 1.1 : 1.6} color="#5a6bff" />
       <group position-y={-SINK}>
-      <pointLight position={[-1, CEIL - 0.3, FRONT + 1.2]} intensity={16} distance={9} decay={2} color="#ffb27a" />
-      <pointLight position={[4, CEIL - 0.3, FRONT + 1.2]} intensity={16} distance={9} decay={2} color="#ffb27a" />
-      <pointLight position={[0.6, CEIL - 0.6, -0.8]} intensity={14} distance={15} decay={2} color="#ffc590" />
-      <pointLight position={[2.5, 3.2, -3.6]} intensity={17} distance={10} decay={2} color="#3f6bff" />
-      <pointLight position={[-2.2, 3.0, -3.2]} intensity={9} distance={8} decay={2} color="#4f8bff" />
-      <pointLight position={[-3.2, CEIL - 0.6, -1.2]} intensity={22} distance={9} decay={2} color="#ffd2a0" />
-      <pointLight position={[2.4, 3.6, -1.4]} intensity={7} distance={6} decay={2} color="#6f7bff" />
+      <pointLight position={[0.6, FLOOR + 1.6, -0.8]} intensity={6} distance={9} decay={2} color="#ffd2a0" />
+      {/* Blau wäscht den Marmor von rechts, links bleibt warm (Referenz) */}
+      <pointLight position={[5.8, 3.4, -3.7]} intensity={20} distance={10} decay={2} color="#3f6bff" />
+      <pointLight position={[-3.6, CEIL - 0.9, -1.6]} intensity={12} distance={7} decay={2} color="#ffd2a0" />
+
 
 
       {/* Sockel mit Stufe und Neonfugen */}
       <Box args={[13.6, FLOOR - 0.15, 8.6]} position={[cx + 0.1, (FLOOR - 0.15) / 2, cz + 0.2]} mat={m.plinth} />
       <Box args={[12, 0.3, 1.1]} position={[cx + 0.4, SINK + 0.15, FRONT + 1.45]} mat={m.charcoal} />
-      <Box args={[12, 0.03, 0.03]} position={[cx + 0.4, SINK + 0.31, FRONT + 2.0]} mat={m.violet} />
+      {/* Blaues LED-Band am Fuß der unteren Stufe + Lichtschein auf dem nassen Boden (Referenz) */}
+      <Box args={[12, 0.045, 0.03]} position={[cx + 0.4, SINK + 0.03, FRONT + 2.02]} mat={m.ledBlue} />
+      <mesh position={[cx + 0.4, SINK + 0.006, FRONT + 2.75]} rotation-x={-Math.PI / 2} material={m.spill}><planeGeometry args={[13, 1.5]} /></mesh>
       <Box args={[13.6, 0.035, 0.035]} position={[cx + 0.1, FLOOR - 0.16, FRONT + 0.65]} mat={m.blue} />
       {/* Bodenplatte & Dach */}
       <Box args={[W + 0.6, 0.3, D + 1.2]} position={[cx, FLOOR - 0.15, cz + 0.6]} mat={m.slab} />
       <Box args={[W + 2.2, 0.42, D + 2.6]} position={[cx + 0.3, CEIL + 0.21, cz + 1.0]} mat={m.fascia} />
       <mesh position={[cx + 0.3, CEIL - 0.005, cz + 1.0]} rotation-x={Math.PI / 2} material={m.soffit}><planeGeometry args={[W + 2.2, D + 2.6]} /></mesh>
-      <Box args={[W + 2.2, 0.04, 0.04]} position={[cx + 0.3, CEIL + 0.43, FRONT + 2.29]} mat={m.white} />
-      <Box args={[W + 2.2, 0.035, 0.035]} position={[cx + 0.3, CEIL - 0.02, FRONT + 2.29]} mat={m.blue} />
+      {/* warmweiße LED-Linie an der Unterkante des Dachrands, rundum (Referenz) */}
+      <Box args={[W + 2.2, 0.035, 0.035]} position={[cx + 0.3, CEIL - 0.02, FRONT + 2.29]} mat={m.white} />
+      <Box args={[0.035, 0.035, D + 2.6]} position={[cx + 0.3 - (W + 2.2) / 2 + 0.02, CEIL - 0.02, cz + 1.0]} mat={m.white} />
+      <Box args={[0.035, 0.035, D + 2.6]} position={[cx + 0.3 + (W + 2.2) / 2 - 0.02, CEIL - 0.02, cz + 1.0]} mat={m.white} />
+      {/* Innendecke dunkel mit Downlights (Referenz), Holz nur am Vordach */}
+      <mesh position={[cx, CEIL - 0.03, cz]} rotation-x={Math.PI / 2} material={m.ceiling}><planeGeometry args={[W - 0.5, D - 0.3]} /></mesh>
+      {[-3.6, -1.2, 1.2, 3.6, 5.6].flatMap((x) => [-3.2, -0.6, 1.8].map((z) => (
+        <mesh key={`dl${x}${z}`} position={[x, CEIL - 0.04, z]} rotation-x={Math.PI / 2} material={m.warm}><circleGeometry args={[0.05, 16]} /></mesh>
+      )))}
       {Array.from({ length: 9 }, (_, i) => (
         <mesh key={i} position={[LEFT + 0.6 + i * 1.5, CEIL - 0.012, FRONT + 1.1]} rotation-x={Math.PI / 2} material={m.warm}><circleGeometry args={[0.075, 20]} /></mesh>
       ))}
@@ -398,7 +427,7 @@ export function Studio({ mobile }: { mobile: boolean }) {
       <Box args={[0.5, H, D]} position={[LEFT, FLOOR + H / 2, cz]} mat={m.charcoal} />
       {/* Rückwand: Marmor */}
       <Box args={[W, H, 0.3]} position={[cx, FLOOR + H / 2, BACK]} mat={m.marble} />
-      <WallLogo position={[0.4, 3.95, BACK + 0.17]} />
+      <WallLogo position={[0.4, FLOOR + 1.5, BACK + 0.18]} />
       {(mobile ? [3, 6] : [1, 3, 5, 7]).map((i) => {
         const x = LEFT + 0.6 + i * 1.5;
         return (
@@ -410,10 +439,11 @@ export function Studio({ mobile }: { mobile: boolean }) {
       })}
       {/* Innen: Holzlamellen links, Boden, Deckenvouten */}
       <mesh position={[LEFT + 0.26, FLOOR + H / 2, cz]} rotation-y={Math.PI / 2} material={m.woodWall}><planeGeometry args={[D, H]} /></mesh>
+      <SlatWall x={LEFT + 0.36} z0={BACK + 0.2} z1={FRONT - 0.3} y0={FLOOR} h={H - 0.08} mat={m.slat} mobile={mobile} />
       <mesh rotation-x={-Math.PI / 2} position={[cx, FLOOR + 0.005, cz]} material={m.floor} receiveShadow><planeGeometry args={[W, D]} /></mesh>
-      <Box args={[W - 0.6, 0.03, 0.03]} position={[cx, CEIL - 0.05, 1.2]} mat={m.violet} />
-      <Box args={[W - 0.6, 0.03, 0.03]} position={[cx, CEIL - 0.05, -2.0]} mat={m.blue} />
-      <Box args={[0.03, 0.03, D - 0.6]} position={[RIGHT - 0.3, FLOOR + 0.04, cz]} mat={m.violet} />
+      {/* warme Vouten-Linien an Rück- und Lamellenwand (Referenz) */}
+      <Box args={[W - 0.6, 0.03, 0.03]} position={[cx, CEIL - 0.06, BACK + 0.22]} mat={m.white} />
+      <Box args={[0.03, 0.03, D - 0.6]} position={[LEFT + 0.42, CEIL - 0.06, cz]} mat={m.white} />
 
       {/* Glasfront + Pfosten, Glas rechts */}
       <mesh position={[(glassL + RIGHT) / 2, FLOOR + H / 2, FRONT]} material={m.glass}><planeGeometry args={[RIGHT - glassL, H]} /></mesh>

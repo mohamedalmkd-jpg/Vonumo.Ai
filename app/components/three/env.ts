@@ -33,6 +33,35 @@ export function makeVGeometry() {
   return g;
 }
 
+/** V-Kontur der Referenz (zwei Balken, linker breiter). Koordinaten ≈ −1…1. */
+function vShape(inset = 0) {
+  const s = new THREE.Shape();
+  const i = inset;
+  s.moveTo(-1.0 + i, 1 - i); s.lineTo(-0.26 - i * 0.6, 1 - i); s.lineTo(0.04, 0.0 + i * 1.6); s.lineTo(0.36 + i * 0.6, 1 - i);
+  s.lineTo(0.92 - i, 1 - i); s.lineTo(0.3 - i * 0.4, -1 + i); s.lineTo(-0.3 + i * 0.4, -1 + i); s.closePath();
+  return s;
+}
+
+/**
+ * Facettiertes V wie im Referenzbild: dicke Extrusion mit flacher 45°-Fase (keine Polster-Rundung).
+ * Gruppe 0 = Front/Rückseite (glänzend schwarz), Gruppe 1 = Seiten + Fasen (blaues Glas).
+ */
+export function makeFacetedV() {
+  const g = new THREE.ExtrudeGeometry(vShape(), { depth: 0.62, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.08, bevelOffset: -0.08, bevelSegments: 1, curveSegments: 1 });
+  g.center();
+  g.computeVertexNormals();
+  return g;
+}
+
+/** Leuchtende V-Kontur (Wandpaneel im Innenraum der Referenz). */
+export function makeVOutline(width = 0.07) {
+  const s = vShape();
+  s.holes.push(new THREE.Path(vShape(width).getPoints().reverse()));
+  const g = new THREE.ShapeGeometry(s);
+  g.center();
+  return g;
+}
+
 export const pointer = { x: 0, y: 0 };
 if (typeof window !== "undefined") {
   window.addEventListener("pointermove", (e) => { pointer.x = (e.clientX / window.innerWidth) * 2 - 1; pointer.y = -(e.clientY / window.innerHeight) * 2 + 1; }, { passive: true });

@@ -13,7 +13,7 @@ const SPOTS: Spot[] = [
   { shot: 0, p: [5.2, 2.65, -4.45], title: "Oberflächen", text: "Dashboards und Interfaces, die Daten in Sekunden lesbar machen.", href: "#leistungen", cta: "UI/UX-Design" },
   { shot: 0, p: [-1.5, 0.32, 5.4], title: "Licht & 3D", text: "Echtzeit-3D mit physikalischem Licht – flüssig bis aufs Smartphone.", href: "#labor", cta: "Material-Labor" },
   { shot: 1, p: [-2.2, 1.85, -2.4], title: "KI-Systeme", text: "Assistenten und Automationen, die Ihre Abläufe kennen und Ihrem Team Zeit schenken.", href: "#leistungen", cta: "KI-Lösungen" },
-  { shot: 1, p: [2.4, 3.0, -2.6], title: "Identität", text: "Ein Zeichen, eine Haltung: Markenauftritt aus einem Guss – vom Logo bis zur Website.", href: "#arbeiten", cta: "Arbeiten" },
+  { shot: 1, p: [2.4, 2.25, -2.6], title: "Identität", text: "Ein Zeichen, eine Haltung: Markenauftritt aus einem Guss – vom Logo bis zur Website.", href: "#arbeiten", cta: "Arbeiten" },
   { shot: 1, p: [5.2, 2.65, -4.45], title: "Designsystem", text: "Farben, Typografie und Komponenten als System – jedes Projekt bekommt sein eigenes.", href: "#leistungen", cta: "UI/UX-Design" },
   { shot: 1, p: [6.65, 2.6, -1.4], title: "Entwicklung", text: "Next.js, TypeScript, Edge – schnell, sicher und vollständig Ihr Eigentum.", href: "#leistungen", cta: "Entwicklung" },
 ];

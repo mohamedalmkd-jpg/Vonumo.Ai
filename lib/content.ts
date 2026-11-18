@@ -4,10 +4,20 @@ export const CONTACT = {
   phoneHref: "tel:+4915906712485",
 };
 
+// Hauptnavigation wie im Referenz-Layout (Leistungen · Projekte · Studio · … · Kontakt).
+// „Blog“ aus der Referenz fehlt bewusst: es gibt noch keine Blog-Inhalte (kein toter Link).
 export const NAV = [
-  { href: "#arbeiten", label: "Arbeiten" },
   { href: "#leistungen", label: "Leistungen" },
-  { href: "#ebenen", label: "Technologie" },
+  { href: "#arbeiten", label: "Projekte" },
+  { href: "#ebenen", label: "Studio" },
+  { href: "#preise", label: "Preise" },
+  { href: "#kontakt", label: "Kontakt" },
+] as const;
+
+/** Vollständiges Menü (rundes Menü-Symbol, auf allen Breiten). */
+export const MENU = [
+  ...NAV.slice(0, 3),
+  { href: "#labor", label: "Material-Labor" },
   { href: "#preise", label: "Preise" },
   { href: "#faq", label: "FAQ" },
   { href: "#kontakt", label: "Kontakt" },

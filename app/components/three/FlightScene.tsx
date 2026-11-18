@@ -33,7 +33,8 @@ const WIDE = {
     { pos: v(-4.4, 1.7, 7.6), tgt: v(2.4, 3.0, 0) },
     { pos: v(0.2, 2.1, 7.0), tgt: v(1.6, 2.4, -3) },
     { pos: v(1.1, 2.15, 4.2), tgt: v(2.0, 2.4, -4) },
-    { pos: v(-1.7, 2.25, 2.3), tgt: v(2.3, 2.55, -3.6) },
+    // Referenz „03 / Erlebnis“: nah, leicht von unten, V-Skulptur füllt die rechte Bildhälfte
+    { pos: v(0.55, 1.75, -0.1), tgt: v(1.55, 2.2, -3.2) },
   ]),
 };
 const TALL = {
@@ -46,7 +47,7 @@ const TALL = {
     { pos: v(-6.2, 1.5, 13.5), tgt: v(1.5, 3.2, 0) },
     { pos: v(-1.0, 2.2, 7.2), tgt: v(1.2, 2.4, -3) },
     { pos: v(0.6, 2.3, 3.9), tgt: v(1.6, 2.4, -4) },
-    { pos: v(0.3, 2.5, 1.7), tgt: v(2.4, 2.15, -4.6) },
+    { pos: v(1.15, 1.8, 0.75), tgt: v(2.35, 2.75, -2.6) },
   ]),
 };
 // Kleiner Vorschub während der Ruhephasen (Referenz: Kamera „atmet“ beim Weiterscrollen)

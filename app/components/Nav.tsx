@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { NAV } from "@/lib/content";
+import { MENU, NAV } from "@/lib/content";
 import { Logo } from "./Logo";
 import { Scramble } from "./Scramble";
 
@@ -35,7 +35,7 @@ export function Nav() {
             <span className="text-[18px] font-medium tracking-[0.06em]">VONUMO</span>
           </a>
           <nav aria-label="Hauptnavigation" className="hidden md:block">
-            <ul className="flex items-center gap-7 text-[11px] uppercase tracking-[0.16em]">
+            <ul className="flex items-center gap-8 text-[11px] font-medium uppercase tracking-[0.1em]">
               {NAV.map((n) => {
                 const on = active === n.href.slice(1);
                 return (
@@ -50,12 +50,13 @@ export function Nav() {
             </ul>
           </nav>
           <div className="flex items-center gap-3">
-            <span className="hidden font-mono text-[11px] tabular-nums text-mute lg:inline">[ {String(pct).padStart(3, "0")}% ]</span>
-            <a href="#termin" className="btn hidden !py-2 sm:inline-flex" data-scramble-host><Scramble text="Termin [ → ]" hover onView={false} /></a>
-            <button type="button" className="grid h-9 w-9 place-items-center border border-line md:hidden" aria-expanded={open} aria-controls="mnav" aria-label={open ? "Menü schließen" : "Menü öffnen"} onClick={() => setOpen((o) => !o)}>
-              <span className="relative block h-2.5 w-4">
-                <span className={`absolute left-0 h-px w-4 bg-current transition-all ${open ? "top-1 rotate-45" : "top-0"}`} />
-                <span className={`absolute left-0 h-px w-4 bg-current transition-all ${open ? "top-1 -rotate-45" : "top-2"}`} />
+            <a href="#termin" className="btn hidden !px-4 !py-2 sm:inline-flex" data-scramble-host><Scramble text="Termin buchen" hover onView={false} /><span aria-hidden="true">↗</span></a>
+            {/* rundes Menü-Symbol wie in der Referenz – auf allen Breiten */}
+            <button type="button" className="grid h-9 w-9 place-items-center rounded-full border border-line-2 transition-colors hover:border-fg" aria-expanded={open} aria-controls="mnav" aria-label={open ? "Menü schließen" : "Menü öffnen"} onClick={() => setOpen((o) => !o)}>
+              <span className="relative block h-2.5 w-3.5">
+                <span className={`absolute left-0 h-px w-3.5 bg-current transition-all ${open ? "top-[5px] rotate-45" : "top-0"}`} />
+                <span className={`absolute left-0 top-[5px] h-px w-3.5 bg-current transition-opacity ${open ? "opacity-0" : ""}`} />
+                <span className={`absolute left-0 h-px w-3.5 bg-current transition-all ${open ? "top-[5px] -rotate-45" : "top-[10px]"}`} />
               </span>
             </button>
           </div>
@@ -64,8 +65,8 @@ export function Nav() {
       <AnimatePresence>
         {open && (
           <motion.nav id="mnav" aria-label="Mobile Navigation" initial={{ clipPath: "inset(0 0 100% 0)" }} animate={{ clipPath: "inset(0 0 0% 0)" }} exit={{ clipPath: "inset(0 0 100% 0)" }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="grid-bg fixed inset-x-0 top-14 z-40 border-b border-line bg-ink p-4 md:hidden">
-            {NAV.map((n, i) => (
+            className="grid-bg fixed inset-x-0 top-14 z-40 border-b border-line bg-ink p-4 md:left-auto md:w-[26rem] md:border-l md:p-6">
+            {MENU.map((n, i) => (
               <a key={n.href} href={n.href} onClick={() => setOpen(false)} className="flex items-baseline justify-between border-b border-line py-4">
                 <span className="dot text-4xl">{n.label}</span><span className="label">0{i + 1}</span>
               </a>

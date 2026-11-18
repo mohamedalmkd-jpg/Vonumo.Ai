@@ -7,7 +7,6 @@ import { Scramble } from "./Scramble";
 import { DetailObject, FlightScene } from "./three";
 import { HeroHotspots } from "./HeroHotspots";
 import { CHAPTERS, flight } from "./three/flight";
-import { DISCIPLINES } from "@/lib/content";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -28,7 +27,8 @@ function Chars({ text }: { text: string }) {
   );
 }
 
-const SWATCHES = ["#4f6bff", "#33e1ff", "#ff4fa8", "#c4ff3d", "#ecedf3"];
+// Reihenfolge und Töne wie im Referenzbild „03 / Erlebnis“
+const SWATCHES = ["#22c7ff", "#9b8cff", "#ff4fa8", "#c4ff3d", "#ffffff"];
 // Zielpunkte beim Einrasten (innerhalb der Ruhebereiche, damit der leichte Vorschub sichtbar bleibt)
 const REST_FWD = [0, 0.34, 0.86];
 const REST_BACK = [0, 0.48, 0.97];
@@ -88,6 +88,7 @@ export function Hero() {
       if (next >= 0) enter(next);
       current = next;
       flight.chapter = next;
+      el.querySelectorAll<HTMLElement>("[data-dot]").forEach((d, k) => { d.dataset.on = k === next ? "1" : "0"; });
     };
 
     const st = ScrollTrigger.create({ trigger: el, start: "top top", end: "bottom bottom", onUpdate: (s) => sync(s.progress) });
@@ -142,60 +143,75 @@ export function Hero() {
         {/* Kapitel 01 – Studio */}
         <div data-chapter className="invisible absolute inset-0 mx-auto max-w-[1400px] px-4 sm:px-6">
           <div className="absolute left-4 right-4 top-[11%] sm:left-6 md:top-[30%] md:max-w-[52rem]">
-            <p data-eyebrow className="label">01 / Studio</p>
+            <p data-eyebrow className="label font-mono tracking-[0.2em]">01 / Studio</p>
             <h1 className="mt-4 text-[clamp(2.2rem,4.2vw,4.2rem)] font-light leading-[1.04] tracking-[-0.02em] text-fg/95">
               <span className="block"><Chars text="Websites mit Tiefe." /></span>
               <span className="block text-fg/60"><Chars text="KI mit Wirkung." /></span>
             </h1>
             <p data-up className="mt-4 max-w-[26rem] text-[12px] leading-relaxed text-mute sm:mt-5 sm:text-[13px]">3D-Websites, UI/UX-Design und KI-Systeme für Unternehmen. Entworfen und gebaut in Deutschland.</p>
             <div data-up className="pointer-events-auto mt-5 flex flex-wrap gap-2 sm:mt-7">
-              <a href="#termin" className="btn btn-solid" data-scramble-host><Scramble text="Projekt starten" hover onView={false} /><span aria-hidden="true">→</span></a>
-              <a href="#leistungen" className="btn" data-scramble-host><Scramble text="Leistungen" hover onView={false} /></a>
+              <a href="#termin" className="btn btn-solid" data-scramble-host><Scramble text="Projekt starten" hover onView={false} /><span aria-hidden="true">↗</span></a>
+              <a href="#leistungen" className="btn" data-scramble-host><Scramble text="Leistungen" hover onView={false} /><span aria-hidden="true">↗</span></a>
             </div>
           </div>
-          <p data-up className="label absolute bottom-6 left-4 sm:left-6">Scrollen <span aria-hidden="true">↓</span></p>
+          {/* Referenz: V-Karte „VONUMO STUDIO“ unten links */}
+          <div data-up className="absolute bottom-6 left-4 hidden sm:left-6 md:block">
+            <div className="brackets relative h-[6.5rem] w-[10.5rem] border border-line-2">
+              <DetailObject className="absolute inset-0" chapters={[0]} />
+            </div>
+            <p className="label mt-2 text-fg/85">Vonumo Studio</p>
+          </div>
           <p data-up className="label absolute bottom-6 right-4 text-right sm:right-6">2–4 Wochen bis live<br /><span className="text-fg">Wartung inklusive</span></p>
         </div>
 
         {/* Kapitel 02 – Detail (senkrechte Typo + Inset) */}
         <div data-chapter className="invisible absolute inset-0 mx-auto max-w-[1400px] px-4 sm:px-6">
-          <p className="label absolute left-4 top-6 sm:left-6">02 / Detail</p>
           <h2 className="absolute left-4 top-[24%] text-[clamp(2.8rem,5.6vw,6rem)] font-light uppercase leading-[0.98] tracking-[-0.01em] text-fg sm:left-6 md:top-[22%]">
             <span className="sr-only">Jedes Pixel zählt.</span>
-            {["Jedes", "Pixel", "zählt."].map((w) => (
+            {["Jedes", "Pixel", "zählt"].map((w) => (
               <span key={w} aria-hidden="true" data-line className="block">{w}</span>
             ))}
           </h2>
           <div className="absolute bottom-6 left-4 sm:left-6">
             <div data-card className="brackets relative h-[7.5rem] w-[12rem] border border-line-2 sm:h-[8.5rem] sm:w-[14rem]">
               <DetailObject className="absolute inset-0" />
-              <span className="label absolute bottom-2 left-2 text-[10px] text-fg/80">Material · Licht · Form</span>
             </div>
-            <a data-up href="#leistungen" className="btn pointer-events-auto mt-3 !py-2" data-scramble-host><Scramble text="Leistungen ansehen" hover onView={false} /></a>
+            {/* Referenz: segmentiertes Etikett unter der Karte */}
+            <p data-up className="mt-3 flex w-[12rem] border border-line-2 font-mono text-[10px] uppercase tracking-[0.16em] text-fg/85 sm:w-[14rem]">
+              {["Material", "Licht", "Form"].map((w, k) => <span key={w} className={`flex-1 py-1.5 text-center ${k ? "border-l border-line-2" : ""}`}>{w}</span>)}
+            </p>
+            <a data-up href="#leistungen" className="btn pointer-events-auto mt-3 !py-2" data-scramble-host><Scramble text="Leistungen ansehen" hover onView={false} /><span aria-hidden="true">↗</span></a>
           </div>
         </div>
 
         {/* Kapitel 03 – Erlebnis (Innenraum) */}
         <div data-chapter className="invisible absolute inset-0 mx-auto max-w-[1400px] px-4 sm:px-6">
           <div className="absolute left-4 right-4 top-[14%] sm:left-6 md:top-[30%] md:max-w-[44rem]">
-            <p data-eyebrow className="label">03 / Erlebnis</p>
+            <p data-eyebrow className="label font-mono tracking-[0.2em]">03 / Erlebnis</p>
             <h2 className="mt-4 text-[clamp(2.5rem,5vw,5rem)] font-light leading-[1.04] tracking-[-0.02em] text-fg/90">
               <span className="block"><Chars text="Interfaces, die" /></span>
               <span className="block"><Chars text="man betritt." /></span>
             </h2>
+            <p data-up className="mt-5 max-w-[22rem] text-[15px] leading-relaxed text-fg/80 sm:text-[17px]">Interaktive 3D-Interfaces, die Marken erlebbar machen.</p>
           </div>
           <div data-up className="absolute bottom-6 left-4 sm:left-6">
-            <div className="flex gap-1.5">{SWATCHES.map((c) => <span key={c} className="block h-6 w-6 border border-line" style={{ background: c }} />)}</div>
-            <p className="label mt-3 max-w-[16rem] leading-relaxed">Farbe · Licht · Tiefe<span className="hidden sm:inline"><br /><span className="text-fg/80">Jedes Projekt bekommt sein eigenes Designsystem.</span></span></p>
+            <div className="flex gap-2">{SWATCHES.map((c) => <span key={c} className="block h-7 w-7" style={{ background: c }} />)}</div>
+            <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.3em] text-fg/85">Farbe · Licht · Tiefe</p>
+            <p className="label mt-4 hidden max-w-[17rem] leading-relaxed text-fg/80 sm:block">Jedes Projekt bekommt ein eigenes Designsystem.</p>
           </div>
           <div data-up className="absolute bottom-6 right-4 text-right sm:right-6">
-            <ul className="hidden space-y-1 text-[11px] uppercase tracking-[0.14em] text-fg/80 sm:block">
-              {DISCIPLINES.map((d) => <li key={d.key}>{d.title}</li>)}
-            </ul>
-            <a href="#termin" className="btn btn-solid pointer-events-auto mt-4 !py-2" data-scramble-host><Scramble text="Projekt starten" hover onView={false} /><span aria-hidden="true">→</span></a>
+            <a href="#termin" className="btn btn-solid pointer-events-auto" data-scramble-host><Scramble text="Projekt starten" hover onView={false} /><span aria-hidden="true">↗</span></a>
           </div>
         </div>
         <HeroHotspots />
+        {/* Kapitel-Anzeige (Referenz: drei Quadrate unten mittig) – klickbar */}
+        <div className="pointer-events-auto absolute bottom-5 left-1/2 z-[6] hidden -translate-x-1/2 gap-0.5 md:flex" role="group" aria-label="Kapitel">
+          {["Studio", "Detail", "Erlebnis"].map((t, k) => (
+            <button key={t} type="button" data-dot data-on={k === 0 ? "1" : "0"} aria-label={`Kapitel ${k + 1}: ${t}`}
+              onClick={() => { const el = wrap.current; const l = window.__lenis; if (!el) return; const y = el.offsetTop + REST_FWD[k] * (el.offsetHeight - window.innerHeight); if (l) l.scrollTo(y, { duration: 1.4 }); else window.scrollTo(0, y); }}
+              className="group grid h-6 w-6 place-items-center"><span className="block h-2 w-2 border border-fg/60 transition-colors group-hover:border-fg group-data-[on=1]:bg-fg" /></button>
+          ))}
+        </div>
       </div>
     </section>
   );
