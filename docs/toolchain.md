@@ -11,12 +11,12 @@
 | Three.js + R3F + drei | npm | ✅ | three 0.187, R3F 9.8, drei 10.7; production build passes |
 | GSAP + ScrollTrigger + @gsap/react | npm | ✅ | gsap 3.15, @gsap/react 2.1 |
 | Lenis | npm | ✅ | lenis 1.3 (one scroll loop via gsap.ticker) |
-| Runway | REST API (SDK `@runwayml/sdk`) | ⏳ key invalid | Host reachable; key saved via the secure form is **rejected by Runway** ("must start with `key_`"). Owner: create an API key at dev.runwayml.com (API Keys) and save it again. Every generation costs Runway credits, so only with approval |
+| Runway | REST API (SDK `@runwayml/sdk`) | ⏳ key invalid | Re-tested 2026-11-18 with the credit-free `GET /v1/organization`: still 401. Host reachable; key saved via the secure form is **rejected by Runway** ("must start with `key_`"). Owner: create an API key at dev.runwayml.com (API Keys) and save it again. Every generation costs Runway credits, so only with approval |
 | FFmpeg | CLI | ✅ | 6.1; AV1 (svt/aom), VP9, H.264, WebP, AVIF encoders |
 | Playwright | CLI + lib | ✅ | 1.63, Chromium launches. Software GL only (no GPU), see CLAUDE.md |
 | GitHub | MCP + git | 🔌 | `get_me`: mohamedalmkd-jpg. Push to feature branches works |
 | Vercel | MCP | 🔌 | Preview deploys of `vonumo-v2` from feature branches work. Production is never touched without approval |
-| Poly Haven | HTTP API | ✅ | `api.polyhaven.com` 200; HDRI download verified (moonless_golf 1k). 4K/8K HDRIs and PBR textures can now be fetched |
+| Poly Haven | HTTP API | ✅ | In production use: night HDRI `moonlit_golf` (1k/2k, DWAA EXR), PBR sets in `public/tex`, models in `public/models`. Needs a non-default User-Agent (Python urllib gets 403). Thumbnails (`cdn.polyhaven.com`) are not allowlisted, so previews are rendered locally |
 | Awwwards / CSS Design Awards | websites | ⚠️ | Not on the network allowlist. Study references the owner sends (URLs, recordings); add a host only for a concrete reference |
 
 ## Earlier inventory (2026-11-17)

@@ -101,16 +101,13 @@ We build premium, cinematic, highly interactive websites. Quality target = the o
 - Lazy‑load three.js (`next/dynamic`, `ssr:false`); no blocking assets above the fold; compress any new textures/models (KTX2/Draco/meshopt).
 
 ## Hero fly-through (section 1) — how it works
-- **Current hero = 2.5D reconstruction of the owner's design photos** (`three/HeroDepth.tsx`, View behind the DOM).
-  - Each photo has a hand-built depth map (`scripts/hero-depth.py` → `public/hero/*-depth.png`). The shader does a depth-dependent dolly, pointer/touch parallax, depth of field with focus pulls, a light switch-on with flicker, star twinkle, neon breathing, wet-ground shimmer, depth-layered dust and speed-based radial motion blur.
-  - Hotspots (`HeroHotspots.tsx`) are pinned to real objects via `heroProject()` (`three/flight.ts`, the same mapping as the shader). They open service cards, which become a bottom sheet on phones.
-  - It is honestly 2.5D, not real 3D geometry: motion is kept small so hidden areas never tear open.
-  - The images are interim crops from the owner's collage. With full-res originals (same filenames), re-tune the polygons in `hero-depth.py` and add shots.
-  - `HeroPhoto.tsx` is the old DOM-only fallback. The 3D pavilion stays for `?capture=reel`.
+- **Current hero = genuine real-time 3D** (`three/FlightScene.tsx` + `three/Studio.tsx`): the camera flies around and into the pavilion. The 2.5D photo version was removed; the owner's mockups live in `reference/mockups/` as the look target only.
+  - Hotspots (`HeroHotspots.tsx`) are 3D world points projected through the real camera matrix (`heroProject()` in `three/flight.ts`). They open service cards, which become a bottom sheet on phones.
+  - Fidelity audit: `node scripts/fidelity-audit.cjs <out> [desktop|iphone] [query] [dsf]` reports the real render resolution, GL limits and frame time and captures the rest poses.
 - `app/components/Hero.tsx`: `#top` is 400svh with a sticky 100svh stage. ScrollTrigger writes progress into `flight.p` (`three/flight.ts`). Chapters (`CHAPTERS`) and camera moves (`MOVES`) share that progress axis. Chapter text switches on entering a rest range: it is not scrubbed, it leaves in 0.2 s, and it enters with a char blur reveal or line clip reveal. `html[data-immersive]` hides the nav during moves and chapter 2.
 - Direction-aware snap: 180 ms after scrolling stops, Lenis glides to the next rest point, so one gesture = one cinematic move.
 - `three/FlightScene.tsx`: the camera rig follows Catmull-Rom keyframes (`WIDE` for landscape, `TALL` for portrait) with damping. The scene renders into an FBO; a full-screen pass applies speed-driven radial blur, chromatic offset, vignette and grain. The global `HeroObject` V is hidden (`v: 0`) while the hero is on screen.
-- `three/Studio.tsx`: the procedural pavilion, peaks, interior, screens (`three/textures.ts`, canvas-drawn) and dust. No external assets.
+- `three/Studio.tsx`: the pavilion (architecture procedural, materials real PBR), triplanar rock/snow terrain, Poly Haven furniture and plants (`three/Models.tsx`), canvas-drawn screens and marble (`three/textures.ts`) and dust.
 - Adjust framing via keyframes in `FlightScene.tsx`, timing via `CHAPTERS`/`MOVES` in `flight.ts`, and snap targets via `REST_FWD`/`REST_BACK` in `Hero.tsx`.
 - **Never** give the sticky hero stage an opaque background: the WebGL canvas sits *behind* `<main>`.
 

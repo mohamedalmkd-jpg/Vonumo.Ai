@@ -347,10 +347,10 @@ export function Studio({ mobile }: { mobile: boolean }) {
       fascia: new THREE.MeshStandardMaterial({ color: "#20232c", roughness: 0.25, metalness: 0.85 }),
       soffit: new THREE.MeshStandardMaterial({ ...oak, color: "#d39a6a", roughness: 1, metalness: 0, emissive: new THREE.Color("#ff9a55"), emissiveMap: oak.map, emissiveIntensity: 0.16 }),
       woodWall: new THREE.MeshStandardMaterial({ ...oakV, color: "#c98f5e", roughness: 1, emissive: new THREE.Color("#ff9a55"), emissiveMap: oakV.map, emissiveIntensity: 0.1 }),
-      marble: new THREE.MeshStandardMaterial({ map: makeMarble(), roughness: 0.25, metalness: 0.05, color: "#9aa0b4" }),
+      marble: new THREE.MeshStandardMaterial({ map: makeMarble(), roughness: 0.22, metalness: 0.05, color: "#80869a" }),
       floor: new THREE.MeshStandardMaterial({ ...floor, color: "#121318", roughness: 0.75, metalness: 0.25, envMapIntensity: 0.45 }),
       mullion: new THREE.MeshStandardMaterial({ color: "#030305", roughness: 0.3, metalness: 0.85 }),
-      glass: new THREE.MeshPhysicalMaterial({ color: "#dfe5ff", roughness: 0.02, metalness: 0, transparent: true, opacity: 0.05, envMapIntensity: 0.7, specularIntensity: 1, side: THREE.DoubleSide, depthWrite: false }),
+      glass: new THREE.MeshPhysicalMaterial({ color: "#dfe5ff", roughness: 0.02, metalness: 0, transparent: true, opacity: 0.05, envMapIntensity: 0.35, specularIntensity: 1, side: THREE.DoubleSide, depthWrite: false }),
       blue: glow("#4f7bff", 2.6), violet: glow("#8b6bff", 2.4), warm: glow("#ffd8a8", 1.6), white: glow("#ffb070", 2.0),
       sign: new THREE.MeshBasicMaterial({ map: makeSign("VONUMO"), transparent: true, toneMapped: false, color: new THREE.Color(2.4, 2.5, 2.8), depthWrite: false }),
     };
@@ -370,9 +370,9 @@ export function Studio({ mobile }: { mobile: boolean }) {
       <group position-y={-SINK}>
       <pointLight position={[-1, CEIL - 0.3, FRONT + 1.2]} intensity={16} distance={9} decay={2} color="#ffb27a" />
       <pointLight position={[4, CEIL - 0.3, FRONT + 1.2]} intensity={16} distance={9} decay={2} color="#ffb27a" />
-      <pointLight position={[0.6, CEIL - 0.6, -0.8]} intensity={22} distance={15} decay={2} color="#ffc590" />
-      <pointLight position={[2.5, 3.2, -3.6]} intensity={26} distance={10} decay={2} color="#3f6bff" />
-      <pointLight position={[-2.2, 3.0, -3.2]} intensity={14} distance={8} decay={2} color="#4f8bff" />
+      <pointLight position={[0.6, CEIL - 0.6, -0.8]} intensity={14} distance={15} decay={2} color="#ffc590" />
+      <pointLight position={[2.5, 3.2, -3.6]} intensity={17} distance={10} decay={2} color="#3f6bff" />
+      <pointLight position={[-2.2, 3.0, -3.2]} intensity={9} distance={8} decay={2} color="#4f8bff" />
       <pointLight position={[-3.2, CEIL - 0.6, -1.2]} intensity={22} distance={9} decay={2} color="#ffd2a0" />
       <pointLight position={[2.4, 3.6, -1.4]} intensity={7} distance={6} decay={2} color="#6f7bff" />
 
