@@ -6,7 +6,6 @@ import { useGSAP } from "@gsap/react";
 import { Scramble } from "./Scramble";
 import { DetailObject, FlightScene } from "./three";
 import { HeroHotspots } from "./HeroHotspots";
-import { HeroDepth } from "./three";
 import { CHAPTERS, flight } from "./three/flight";
 import { DISCIPLINES } from "@/lib/content";
 
@@ -39,7 +38,6 @@ const REST_BACK = [0, 0.48, 0.97];
  * Drei Kapitel – Studio (Totale), Detail (Fassade), Erlebnis (Innenraum).
  */
 export function Hero() {
-  const photo = typeof window === "undefined" || new URLSearchParams(window.location.search).get("capture") !== "reel";
   const wrap = useRef<HTMLElement>(null);
 
   useGSAP(() => {
@@ -92,9 +90,6 @@ export function Hero() {
       flight.chapter = next;
     };
 
-    const poster = el.querySelector<HTMLElement>("[data-hero-poster]");
-    const hidePoster = () => { if (poster) poster.style.opacity = "0"; };
-    window.addEventListener("vonumo:hero-ready", hidePoster, { once: true });
     const st = ScrollTrigger.create({ trigger: el, start: "top top", end: "bottom bottom", onUpdate: (s) => sync(s.progress) });
     const vis = ScrollTrigger.create({ trigger: el, start: "top bottom", end: "bottom top", onToggle: (s) => (flight.visible = s.isActive) });
     flight.visible = vis.isActive || window.scrollY < el.offsetHeight;
@@ -139,14 +134,8 @@ export function Hero() {
   return (
     <section ref={wrap} id="top" aria-label="Einleitung" className="relative h-[400svh]">
       <div className="sticky top-0 h-[100svh] min-h-[560px] overflow-hidden">
-        {/* Foto-Hero nach den Design-Bildern; der 3D-Pavillon bleibt für die Film-Aufnahme (?capture=reel) */}
-        {photo ? (
-          <>
-            {/* 2.5D-Bühne (WebGL, hinter dem DOM). Poster deckt nur bis zur ersten gerenderten Szene ab. */}
-            <HeroDepth className="absolute inset-0" />
-            <img data-hero-poster src="/hero/exterior.webp" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700" />
-          </>
-        ) : <FlightScene className="absolute inset-0" />}
+        {/* Echte 3D-Szene (Geometrie, PBR, HDRI, Kamerafahrt) – siehe three/FlightScene.tsx + three/Studio.tsx */}
+        <FlightScene className="absolute inset-0" />
         {/* Lesbarkeit: weicher Verlauf hinter dem Text */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgb(4_4_6/0.55),transparent_45%)] md:bg-[linear-gradient(90deg,rgb(4_4_6/0.6),transparent_55%)]" />
 
@@ -179,9 +168,7 @@ export function Hero() {
           </h2>
           <div className="absolute bottom-6 left-4 sm:left-6">
             <div data-card className="brackets relative h-[7.5rem] w-[12rem] border border-line-2 sm:h-[8.5rem] sm:w-[14rem]">
-              {photo
-                ? <div aria-hidden="true" className="absolute inset-0 bg-[url(/hero/interior.webp)] bg-[length:520%_auto] bg-[position:48.5%_58%]" />
-                : <DetailObject className="absolute inset-0" />}
+              <DetailObject className="absolute inset-0" />
               <span className="label absolute bottom-2 left-2 text-[10px] text-fg/80">Material · Licht · Form</span>
             </div>
             <a data-up href="#leistungen" className="btn pointer-events-auto mt-3 !py-2" data-scramble-host><Scramble text="Leistungen ansehen" hover onView={false} /></a>
@@ -208,7 +195,7 @@ export function Hero() {
             <a href="#termin" className="btn btn-solid pointer-events-auto mt-4 !py-2" data-scramble-host><Scramble text="Projekt starten" hover onView={false} /><span aria-hidden="true">→</span></a>
           </div>
         </div>
-        {photo && <HeroHotspots />}
+        <HeroHotspots />
       </div>
     </section>
   );

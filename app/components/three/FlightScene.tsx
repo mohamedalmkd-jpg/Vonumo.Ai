@@ -7,7 +7,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { applyHdri, pointer } from "./env";
-import { CHAPTERS, MOVES, flight } from "./flight";
+import { CHAPTERS, MOVES, flight, hero } from "./flight";
 import { Studio } from "./Studio";
 
 const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
@@ -90,7 +90,7 @@ const reelPose = (t: number, pos: THREE.Vector3, tgt: THREE.Vector3) => {
   const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // weich an- und auslaufen
   REEL.pos.getPoint(e, pos); REEL.tgt.getPoint(e, tgt);
 };
-const _rp = new THREE.Vector3(), _rt = new THREE.Vector3();
+const _rp = new THREE.Vector3(), _rt = new THREE.Vector3(), _vp = new THREE.Matrix4();
 const isCapture = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("capture") === "reel";
 
 const VERT = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }`;
@@ -149,13 +149,15 @@ function Flight() {
     // Nacht-HDRI (Poly Haven) für physikalisch plausible Spiegelungen auf Glas, Metall und Boden
     scene.environmentIntensity = 0.4;
     const stopHdri = applyHdri(gl, scene, "night", 0.32);
-    scene.fog = new THREE.Fog("#0e1436", 40, 190);
+    // Schatten (nur Desktop): Mondlicht wirft den Pavillon auf den nassen Vorplatz
+    gl.shadowMap.enabled = !mobile; gl.shadowMap.type = THREE.PCFSoftShadowMap;
+    scene.fog = new THREE.Fog("#0e1436", 70, 460); // Luftperspektive: Gebirge bleibt sichtbar, wird nur blauer
     st.reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (isCapture()) document.documentElement.dataset.capture = "";
     // Shader vorab kompilieren, damit der erste Scroll nicht ruckelt
     gl.compile(scene, cam);
     return stopHdri;
-  }, [gl, scene, cam, st]);
+  }, [gl, scene, cam, st, mobile]);
 
   const capture = useMemo(isCapture, []);
   useFrame((state, dtRaw) => {
@@ -199,6 +201,10 @@ function Flight() {
     cam.position.copy(st.pos);
     cam.lookAt(st.tgt);
     cam.updateProjectionMatrix();
+    cam.updateMatrixWorld();
+    // Kamera-Matrix für die DOM-Hotspots (an echte 3D-Objekte geheftet)
+    _vp.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
+    hero.vp.set(_vp.elements); hero.w = size.width; hero.h = size.height; hero.ready = st.intro > 0.85;
 
     mat.uniforms.uBlur.value = st.blur;
     mat.uniforms.uTime.value = flight.time;

@@ -51,42 +51,99 @@ function Stars({ count }: { count: number }) {
   return <points geometry={geo} frustumCulled={false}><pointsMaterial size={1.1} sizeAttenuation={false} vertexColors fog={false} transparent opacity={0.9} toneMapped={false} /></points>;
 }
 
-function Peaks() {
+/** Wertrauschen + „ridged“ fbm für Gebirgskämme (deterministisch). */
+function hash2(x: number, y: number) { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); }
+function vnoise(x: number, y: number) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const a = hash2(xi, yi), b = hash2(xi + 1, yi), c = hash2(xi, yi + 1), d = hash2(xi + 1, yi + 1);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function ridged(x: number, y: number) {
+  let f = 0, amp = 0.55, fr = 1, w = 1;
+  for (let o = 0; o < 6; o++) {
+    let n = 1 - Math.abs(vnoise(x * fr, y * fr) * 2 - 1);
+    n = n * n * w; w = Math.min(1, n * 1.6);
+    f += n * amp; amp *= 0.5; fr *= 2.03;
+  }
+  return f;
+}
+
+/**
+ * Gebirge als echtes Höhenfeld (statt Kegeln): Kämme aus „ridged“ Rauschen, nach hinten höher,
+ * Schnee nach Höhe UND Neigung (steile Flanken bleiben Fels) – wie im Zielbild.
+ */
+function Peaks({ mobile }: { mobile: boolean }) {
   const geo = useMemo(() => {
-    const list: [number, number, number, number, number][] = [
-      [10, -95, 30, 62, 0.4], [-34, -110, 34, 48, 1.1], [42, -120, 36, 44, 2.0], [-70, -90, 30, 38, 0.2],
-      [74, -88, 26, 34, 0.9], [-8, -140, 40, 40, 1.7], [-110, -130, 40, 52, 0.6], [110, -140, 44, 50, 2.6],
-      [-150, -60, 34, 30, 1.3], [150, -70, 30, 28, 0.1], [-48, -75, 18, 26, 0.7], [30, -80, 16, 22, 1.9],
-    ];
-    const pos: number[] = [], col: number[] = [];
-    const rock = new THREE.Color("#1a2238"), snow = new THREE.Color("#d4ddff");
-    for (const [x, z, r, h, rot] of list) {
-      const g = new THREE.ConeGeometry(r, h, 13, 9).toNonIndexed();
-      const p = g.attributes.position;
-      const n = (a: number, b: number, c: number) => { const s = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719 + x) * 43758.5453; return s - Math.floor(s); };
-      for (let i = 0; i < p.count; i++) {
-        const px = +p.getX(i).toFixed(3), py = +p.getY(i).toFixed(3), pz = +p.getZ(i).toFixed(3);
-        const up = (py + h / 2) / h;
-        const k = 1 + (n(px, py, pz) - 0.5) * 0.6 * (1 - up * 0.5);
-        p.setXYZ(i, px * k, py + (n(pz, px, py) - 0.5) * h * 0.07 * (1 - up), pz * k);
-      }
-      g.rotateY(rot); g.translate(x, h / 2 - 2, z);
-      const pa = g.attributes.position;
-      for (let i = 0; i < pa.count; i++) {
-        const up = (pa.getY(i) + 2) / h;
-        const s = THREE.MathUtils.smoothstep(up + (n(pa.getX(i), 1, pa.getZ(i)) - 0.5) * 0.25, 0.55, 0.8);
-        const cc = rock.clone().lerp(snow, s);
-        col.push(cc.r, cc.g, cc.b);
-        pos.push(pa.getX(i), pa.getY(i), pa.getZ(i));
-      }
+    const segX = mobile ? 220 : 420, segZ = mobile ? 40 : 80;
+    const g = new THREE.PlaneGeometry(560, 170, segX, segZ);
+    g.rotateX(-Math.PI / 2);
+    g.translate(0, 0, -150); // z ≈ −65 … −235
+    const p = g.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), z = p.getZ(i);
+      const back = THREE.MathUtils.smoothstep(-z, 60, 150);         // vorne flach, hinten hoch
+      const ridgeLine = 0.75 + 0.25 * Math.sin(x * 0.018 + 1.3);    // Kammverlauf variiert
+      const h = ridged(x * 0.011 + 3.1, z * 0.011 - 1.7);
+      p.setY(i, -2 + Math.pow(h, 1.5) * 105 * back * ridgeLine);
     }
-    const m = new THREE.BufferGeometry();
-    m.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-    m.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
-    m.computeVertexNormals();
-    return m;
+    g.computeVertexNormals();
+    const n = g.attributes.normal, col: number[] = [];
+    const rock = new THREE.Color("#141b2e"), rockLit = new THREE.Color("#2a3352"), snow = new THREE.Color("#c9d4f6");
+    const c = new THREE.Color();
+    for (let i = 0; i < p.count; i++) {
+      const y = p.getY(i), ny = n.getY(i);
+      const snowAmt = THREE.MathUtils.smoothstep(y + (hash2(p.getX(i), p.getZ(i)) - 0.5) * 8, 16, 30) * THREE.MathUtils.smoothstep(ny, 0.45, 0.75);
+      c.copy(rock).lerp(rockLit, THREE.MathUtils.smoothstep(ny, 0.3, 0.9) * 0.6).lerp(snow, snowAmt);
+      col.push(c.r, c.g, c.b);
+    }
+    g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    return g;
+  }, [mobile]);
+  return <mesh geometry={geo}><meshStandardMaterial vertexColors roughness={0.85} metalness={0} envMapIntensity={0.4} /></mesh>;
+}
+
+/** Spot von der Decke senkrecht nach unten: echte Lichtinseln auf Podest und nassem Boden. */
+function SpotDown({ position, intensity = 40, color = "#ffc590", angle = 0.75 }: { position: [number, number, number]; intensity?: number; color?: string; angle?: number }) {
+  const light = useMemo(() => {
+    const l = new THREE.SpotLight(color, intensity, 9, angle, 1, 2);
+    l.position.set(...position);
+    l.target.position.set(position[0], position[1] - 5, position[2] + 0.6);
+    return l;
+  }, [position, intensity, color, angle]);
+  return <><primitive object={light} /><primitive object={light.target} /></>;
+}
+
+/** Hinterleuchtetes V-Logo auf der Marmorwand (dunkles Metall + Lichtkranz dahinter). */
+function WallLogo({ position }: { position: [number, number, number] }) {
+  const geo = useMemo(makeVGeometry, []);
+  const halo = useMemo(() => {
+    const c = document.createElement("canvas"); c.width = c.height = 256;
+    const x = c.getContext("2d")!; const g = x.createRadialGradient(128, 128, 10, 128, 128, 128);
+    g.addColorStop(0, "rgba(190,205,255,0.9)"); g.addColorStop(0.35, "rgba(110,130,255,0.35)"); g.addColorStop(1, "rgba(80,100,255,0)");
+    x.fillStyle = g; x.fillRect(0, 0, 256, 256);
+    return new THREE.CanvasTexture(c);
   }, []);
-  return <mesh geometry={geo}><meshStandardMaterial vertexColors roughness={0.8} metalness={0.05} flatShading envMapIntensity={0.5} /></mesh>;
+  return (
+    <group position={position}>
+      <mesh position-z={-0.02}><planeGeometry args={[2.4, 2.4]} /><meshBasicMaterial map={halo} transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} color={new THREE.Color(1.6, 1.6, 1.8)} /></mesh>
+      <mesh geometry={geo} scale={[0.42, 0.42, 0.05]}><meshPhysicalMaterial color="#0a0b10" metalness={0.9} roughness={0.2} clearcoat={1} envMapIntensity={1.4} /></mesh>
+      <mesh geometry={geo} scale={[0.435, 0.435, 0.02]} position-z={-0.03}><meshBasicMaterial color={new THREE.Color("#9fb2ff").multiplyScalar(3)} toneMapped={false} /></mesh>
+    </group>
+  );
+}
+
+/** Sichtbare Lichtkegel unter Leuchten (additiv, weich zum Rand und nach unten ausblendend). */
+function LightCone({ position, color = "#ffcf9a", radius = 0.9, height = 2.4, strength = 0.12 }: { position: [number, number, number]; color?: string; radius?: number; height?: number; strength?: number }) {
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false, fog: false,
+    uniforms: { uColor: { value: new THREE.Color(color) }, uStrength: { value: strength } },
+    vertexShader: `varying float vY; varying vec3 vN; varying vec3 vV;
+      void main(){ vY = uv.y; vec4 wp = modelViewMatrix * vec4(position,1.); vN = normalize(normalMatrix * normal); vV = normalize(-wp.xyz); gl_Position = projectionMatrix * wp; }`,
+    fragmentShader: `uniform vec3 uColor; uniform float uStrength; varying float vY; varying vec3 vN; varying vec3 vV;
+      void main(){ float edge = pow(abs(dot(vN, vV)), 1.6); float a = edge * vY * vY * uStrength; gl_FragColor = vec4(uColor * a, a); }`,
+  }), [color, strength]);
+  return <mesh position={position} material={mat}><coneGeometry args={[radius, height, 32, 1, true]} /></mesh>;
 }
 
 function Trees() {
@@ -125,7 +182,7 @@ function Plaza({ mobile }: { mobile: boolean }) {
   useFrame(() => { if (flight.visible !== on) setOn(flight.visible); });
   return (
     <group>
-      <mesh rotation-x={-Math.PI / 2} position-y={0}>
+      <mesh rotation-x={-Math.PI / 2} position-y={0} receiveShadow>
         <planeGeometry args={[150, 150]} />
         {mobile || !on ? (
           <meshStandardMaterial color="#05060b" roughness={0.92} metalness={0.05} envMapIntensity={0.05} />
@@ -140,7 +197,7 @@ function Plaza({ mobile }: { mobile: boolean }) {
 }
 
 function Box({ args, position, mat, rotation }: { args: [number, number, number]; position: [number, number, number]; mat: THREE.Material; rotation?: [number, number, number] }) {
-  return <mesh position={position} rotation={rotation} material={mat}><boxGeometry args={args} /></mesh>;
+  return <mesh position={position} rotation={rotation} material={mat} castShadow receiveShadow><boxGeometry args={args} /></mesh>;
 }
 
 function Screen({ kind, position, rot, w = 2.1 }: { kind: ScreenKind; position: [number, number, number]; rot: number; w?: number }) {
@@ -275,12 +332,12 @@ export function Studio({ mobile }: { mobile: boolean }) {
       <Sky />
       <Stars count={mobile ? 700 : 1600} />
       <hemisphereLight args={["#24305e", "#020306", 0.4]} />
-      <directionalLight position={[-30, 40, 30]} intensity={2.2} color="#b8c4ff" />
+      <directionalLight position={[-30, 40, 30]} intensity={2.2} color="#b8c4ff" castShadow={!mobile} shadow-mapSize={[2048, 2048]} shadow-bias={-0.0004} shadow-normalBias={0.03} shadow-camera-left={-16} shadow-camera-right={16} shadow-camera-top={16} shadow-camera-bottom={-16} shadow-camera-near={10} shadow-camera-far={110} />
       <directionalLight position={[12, 18, -40]} intensity={mobile ? 1.1 : 1.6} color="#5a6bff" />
       <group position-y={-SINK}>
       <pointLight position={[-1, CEIL - 0.3, FRONT + 1.2]} intensity={16} distance={9} decay={2} color="#ffb27a" />
       <pointLight position={[4, CEIL - 0.3, FRONT + 1.2]} intensity={16} distance={9} decay={2} color="#ffb27a" />
-      <pointLight position={[0.6, CEIL - 0.6, -0.8]} intensity={46} distance={15} decay={2} color="#ffc590" />
+      <pointLight position={[0.6, CEIL - 0.6, -0.8]} intensity={30} distance={15} decay={2} color="#ffc590" />
       <pointLight position={[-3.2, CEIL - 0.6, -1.2]} intensity={22} distance={9} decay={2} color="#ffd2a0" />
       <pointLight position={[2.4, 3.6, -1.4]} intensity={7} distance={6} decay={2} color="#6f7bff" />
 
@@ -306,9 +363,19 @@ export function Studio({ mobile }: { mobile: boolean }) {
       <Box args={[0.5, H, D]} position={[LEFT, FLOOR + H / 2, cz]} mat={m.charcoal} />
       {/* Rückwand: Marmor */}
       <Box args={[W, H, 0.3]} position={[cx, FLOOR + H / 2, BACK]} mat={m.marble} />
+      <WallLogo position={[0.4, 3.95, BACK + 0.17]} />
+      {(mobile ? [3, 6] : [1, 3, 5, 7]).map((i) => {
+        const x = LEFT + 0.6 + i * 1.5;
+        return (
+          <group key={`spot${i}`}>
+            <SpotDown position={[x, CEIL - 0.06, FRONT + 1.1]} intensity={mobile ? 30 : 38} />
+            <LightCone position={[x, CEIL - 1.35, FRONT + 1.1]} height={2.6} radius={0.85} strength={mobile ? 0.08 : 0.1} />
+          </group>
+        );
+      })}
       {/* Innen: Holzlamellen links, Boden, Deckenvouten */}
       <mesh position={[LEFT + 0.26, FLOOR + H / 2, cz]} rotation-y={Math.PI / 2} material={m.woodWall}><planeGeometry args={[D, H]} /></mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[cx, FLOOR + 0.005, cz]} material={m.floor}><planeGeometry args={[W, D]} /></mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[cx, FLOOR + 0.005, cz]} material={m.floor} receiveShadow><planeGeometry args={[W, D]} /></mesh>
       <Box args={[W - 0.6, 0.03, 0.03]} position={[cx, CEIL - 0.05, 1.2]} mat={m.violet} />
       <Box args={[W - 0.6, 0.03, 0.03]} position={[cx, CEIL - 0.05, -2.0]} mat={m.blue} />
       <Box args={[0.03, 0.03, D - 0.6]} position={[RIGHT - 0.3, FLOOR + 0.04, cz]} mat={m.violet} />
@@ -326,7 +393,7 @@ export function Studio({ mobile }: { mobile: boolean }) {
       <Sculpture />
 
       </group>
-      <Peaks />
+      <Peaks mobile={mobile} />
       <Trees />
       <Plaza mobile={mobile} />
       <Dust count={mobile ? 250 : 600} />

@@ -7,5 +7,4 @@ export const HeroObject = dynamic(() => import("./HeroObject"), { ssr: false });
 export const ServicesObject = dynamic(() => import("./ServicesObject"), { ssr: false });
 export const FlightScene = dynamic(() => import("./FlightScene"), { ssr: false });
 export const DetailObject = dynamic(() => import("./DetailObject"), { ssr: false });
-export const HeroDepth = dynamic(() => import("./HeroDepth"), { ssr: false });
 export const LabObject = dynamic(() => import("./LabObject"), { ssr: false });
