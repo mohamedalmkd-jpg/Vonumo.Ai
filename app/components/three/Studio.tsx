@@ -84,16 +84,16 @@ function Peaks({ mobile }: { mobile: boolean }) {
       const x = p.getX(i), z = p.getZ(i);
       const back = THREE.MathUtils.smoothstep(-z, 60, 150);         // vorne flach, hinten hoch
       const ridgeLine = 0.75 + 0.25 * Math.sin(x * 0.018 + 1.3);    // Kammverlauf variiert
-      const h = ridged(x * 0.011 + 3.1, z * 0.011 - 1.7);
-      p.setY(i, -2 + Math.pow(h, 1.5) * 105 * back * ridgeLine);
+      const h = THREE.MathUtils.clamp((ridged(x * 0.011 + 3.1, z * 0.011 - 1.7) - 0.12) / 0.55, 0, 1);
+      p.setY(i, -2 + Math.pow(h, 1.35) * 125 * back * ridgeLine);
     }
     g.computeVertexNormals();
     const n = g.attributes.normal, col: number[] = [];
-    const rock = new THREE.Color("#141b2e"), rockLit = new THREE.Color("#2a3352"), snow = new THREE.Color("#c9d4f6");
+    const rock = new THREE.Color("#161d33"), rockLit = new THREE.Color("#33406a"), snow = new THREE.Color("#dfe7ff");
     const c = new THREE.Color();
     for (let i = 0; i < p.count; i++) {
       const y = p.getY(i), ny = n.getY(i);
-      const snowAmt = THREE.MathUtils.smoothstep(y + (hash2(p.getX(i), p.getZ(i)) - 0.5) * 8, 16, 30) * THREE.MathUtils.smoothstep(ny, 0.45, 0.75);
+      const snowAmt = THREE.MathUtils.smoothstep(y + (hash2(p.getX(i), p.getZ(i)) - 0.5) * 10, 18, 34) * THREE.MathUtils.smoothstep(ny, 0.45, 0.75);
       c.copy(rock).lerp(rockLit, THREE.MathUtils.smoothstep(ny, 0.3, 0.9) * 0.6).lerp(snow, snowAmt);
       col.push(c.r, c.g, c.b);
     }
@@ -187,7 +187,7 @@ function Plaza({ mobile }: { mobile: boolean }) {
         {mobile || !on ? (
           <meshStandardMaterial color="#05060b" roughness={0.92} metalness={0.05} envMapIntensity={0.05} />
         ) : (
-          <MeshReflectorMaterial resolution={1024} mirror={0.6} mixBlur={0.6} mixStrength={1.7} mixContrast={1.15} blur={[160, 40]} depthScale={0} 
+          <MeshReflectorMaterial resolution={1024} mirror={0.75} mixBlur={0.5} mixStrength={2.8} mixContrast={1.15} blur={[160, 40]} depthScale={0} 
             roughnessMap={tiles} roughness={0.4} metalness={0.5} color="#080910" envMapIntensity={0.06} />
         )}
       </mesh>
@@ -318,7 +318,7 @@ export function Studio({ mobile }: { mobile: boolean }) {
       floor: new THREE.MeshStandardMaterial({ color: "#0d0e13", roughness: 0.42, metalness: 0.3, envMapIntensity: 0.3 }),
       mullion: new THREE.MeshStandardMaterial({ color: "#030305", roughness: 0.3, metalness: 0.85 }),
       glass: new THREE.MeshPhysicalMaterial({ color: "#dfe5ff", roughness: 0.03, metalness: 0.1, transparent: true, opacity: 0.08, envMapIntensity: 1.6, side: THREE.DoubleSide, depthWrite: false }),
-      blue: glow("#4f7bff", 2.6), violet: glow("#8b6bff", 2.4), warm: glow("#ffd8a8", 2.2), white: glow("#eef2ff", 1.7),
+      blue: glow("#4f7bff", 2.6), violet: glow("#8b6bff", 2.4), warm: glow("#ffd8a8", 2.2), white: glow("#ffb070", 2.0),
       sign: new THREE.MeshBasicMaterial({ map: makeSign("VONUMO"), transparent: true, toneMapped: false, color: new THREE.Color(2.4, 2.5, 2.8), depthWrite: false }),
     };
   }, []);
@@ -337,7 +337,9 @@ export function Studio({ mobile }: { mobile: boolean }) {
       <group position-y={-SINK}>
       <pointLight position={[-1, CEIL - 0.3, FRONT + 1.2]} intensity={16} distance={9} decay={2} color="#ffb27a" />
       <pointLight position={[4, CEIL - 0.3, FRONT + 1.2]} intensity={16} distance={9} decay={2} color="#ffb27a" />
-      <pointLight position={[0.6, CEIL - 0.6, -0.8]} intensity={30} distance={15} decay={2} color="#ffc590" />
+      <pointLight position={[0.6, CEIL - 0.6, -0.8]} intensity={22} distance={15} decay={2} color="#ffc590" />
+      <pointLight position={[2.5, 3.2, -3.6]} intensity={26} distance={10} decay={2} color="#3f6bff" />
+      <pointLight position={[-2.2, 3.0, -3.2]} intensity={14} distance={8} decay={2} color="#4f8bff" />
       <pointLight position={[-3.2, CEIL - 0.6, -1.2]} intensity={22} distance={9} decay={2} color="#ffd2a0" />
       <pointLight position={[2.4, 3.6, -1.4]} intensity={7} distance={6} decay={2} color="#6f7bff" />
 
