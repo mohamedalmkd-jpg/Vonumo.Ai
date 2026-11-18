@@ -48,7 +48,7 @@ export function HeroHotspots() {
   }, []);
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-[5]" aria-label="Hotspots im Bild">
+    <div role="group" className="pointer-events-none absolute inset-0 z-[5]" aria-label="Hotspots im Bild">
       {SPOTS.map((s, i) => {
         const vis = s.shot === shot, on = open === i;
         const flip = s.p[0] > 2;

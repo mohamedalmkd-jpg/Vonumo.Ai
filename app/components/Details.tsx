@@ -47,8 +47,8 @@ export function Details() {
             {DETAILS.map((d, n) => {
               const on = n === i;
               return (
-                <li key={d.title} ref={(el) => { rows.current[n] = el; }} className={`hud grid grid-cols-[auto_1fr] gap-x-3 p-3 transition-all duration-500 ${on ? "border-line-2 !bg-white/[0.06]" : "opacity-45"}`}>
-                  <span className="label row-span-2 pt-0.5">0{n + 1}</span>
+                <li key={d.title} ref={(el) => { rows.current[n] = el; }} className={`hud grid grid-cols-[auto_1fr] gap-x-3 p-3 transition-all duration-500 ${on ? "border-line-2 !bg-white/[0.06] text-fg" : "text-mute"}`}>
+                  <span className={`label row-span-2 pt-0.5 ${on ? "" : "!text-mute"}`}>0{n + 1}</span>
                   <div className="flex items-center justify-between gap-3">
                     <b className="text-[12px] font-medium uppercase tracking-[0.14em]">{d.title}</b>
                     <Icon name={d.icon} className={on ? "text-a2" : "text-mute"} />
