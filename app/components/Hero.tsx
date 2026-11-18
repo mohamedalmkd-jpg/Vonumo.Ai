@@ -96,11 +96,12 @@ export function Hero() {
     const onLoaded = () => { loaded = true; flight.started = true; sync(st.progress); };
     if (loaded) onLoaded(); else window.addEventListener("vonumo:loaded", onLoaded, { once: true });
 
-    // Einrasten: eine Scroll-Geste = eine Kamerafahrt (richtungsabhängig, über Lenis)
+    // Einrasten: eine Scroll-Geste = eine Kamerafahrt (richtungsabhängig, über Lenis). QA: ?nosnap hält jede Zwischenposition.
+    const noSnap = new URLSearchParams(window.location.search).has("nosnap");
     let idle = 0, touching = false, dir = 1;
     const snap = () => {
       const lenis = window.__lenis;
-      if (!lenis || touching || reduce) return;
+      if (!lenis || touching || reduce || noSnap) return;
       const p = st.progress;
       if (p <= 0.001 || p >= 0.999) return;
       if (chapterAt(p) >= 0) return;

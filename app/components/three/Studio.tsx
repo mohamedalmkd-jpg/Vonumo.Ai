@@ -275,12 +275,15 @@ function Sculpture() {
   // leichtes Pendeln um die Ansicht aus Kapitel „Erlebnis“, minimales Schweben
   useFrame(() => { if (ref.current) { const t = flight.time; ref.current.rotation.y = -0.1 + Math.sin(t * 0.3) * 0.14; ref.current.position.y = cy + Math.sin(t * 0.7) * 0.03; } });
   const m = useMemo(vMaterials, []);
-  const ring = useMemo(() => glow("#38b8ff", 4.2), []);
+  const ring = useRef<THREE.Mesh>(null);
+  const ledRing = useMemo(() => glow("#38b8ff", 4.2), []);
+  // Deckenring schaltet sich erst ein, wenn die Kamera den Innenraum betritt (von außen kein schwebender Ring)
+  useFrame(() => { if (ring.current) ring.current.visible = flight.p > 0.5; });
   const ring2 = useMemo(() => glow("#2f6bff", 1.6), []);
   return (
     <group position={[2.4, 0, -2.6]}>
       <mesh position-y={FLOOR + 0.3} castShadow receiveShadow><cylinderGeometry args={[1.05, 1.08, 0.6, 96]} /><meshPhysicalMaterial color="#05060a" roughness={0.18} metalness={0.7} clearcoat={0.8} /></mesh>
-      <mesh position-y={top + 0.004} rotation-x={-Math.PI / 2} material={ring}><ringGeometry args={[0.86, 0.99, 128]} /></mesh>
+      <mesh position-y={top + 0.004} rotation-x={-Math.PI / 2} material={ledRing}><ringGeometry args={[0.86, 0.99, 128]} /></mesh>
       <mesh position-y={top + 0.003} rotation-x={-Math.PI / 2}><circleGeometry args={[0.86, 96]} /><meshStandardMaterial color="#03040a" roughness={0.12} metalness={0.8} /></mesh>
       <mesh position-y={FLOOR + 0.02} rotation-x={-Math.PI / 2} material={ring2}><ringGeometry args={[1.1, 1.14, 128]} /></mesh>
       <pointLight position={[0, top + 0.25, 0]} intensity={5} distance={2} decay={2} color="#3d8bff" />
@@ -288,7 +291,7 @@ function Sculpture() {
         <mesh geometry={geo} material={m} scale={0.7} castShadow />
       </group>
       {/* Lichtring über der Skulptur (Referenz 05/06) */}
-      <mesh position-y={CEIL - 0.07} rotation-x={Math.PI / 2}><torusGeometry args={[2.1, 0.018, 10, 160]} /><meshBasicMaterial color={new THREE.Color("#ffe6c4").multiplyScalar(1.5)} toneMapped={false} /></mesh>
+      <mesh ref={ring} position-y={CEIL - 0.07} rotation-x={Math.PI / 2}><torusGeometry args={[2.1, 0.018, 10, 160]} /><meshBasicMaterial color={new THREE.Color("#ffe6c4").multiplyScalar(1.5)} toneMapped={false} /></mesh>
       {/* Bildschirmwand im Halbkreis hinter dem V: große Displays auf schlanken Säulen, fahren nacheinander hoch */}
       {[-72, -36, 0, 36, 72].map((deg, i) => {
         const a = (deg * Math.PI) / 180, r = 1.85, x = Math.sin(a) * r, z = -Math.cos(a) * r;
