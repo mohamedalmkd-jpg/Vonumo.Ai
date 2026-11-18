@@ -180,7 +180,9 @@ export function makeWood(vertical = false) {
 
 /** Heller Marmor mit Adern (Rückwand innen). */
 export function makeMarble() {
-  const [c, x] = canvas(1024, 1024);
+  // 2048² (Zeichnung in 1024er-Koordinaten, doppelt skaliert) → scharfe Adern auch in Nahaufnahme
+  const [c, x] = canvas(2048, 2048);
+  x.scale(2, 2);
   const r = rng(23);
   const g = x.createLinearGradient(0, 0, 1024, 1024);
   g.addColorStop(0, "#d9dbe2"); g.addColorStop(1, "#b9bcc7");
@@ -207,7 +209,7 @@ export function makeMarble() {
     x.stroke();
   }
   const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 16;
   return t;
 }
 

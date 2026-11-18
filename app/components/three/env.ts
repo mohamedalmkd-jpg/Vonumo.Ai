@@ -42,7 +42,7 @@ if (typeof window !== "undefined") {
  * Echte HDRI-Umgebungen (Poly Haven, CC0 – über @pmndrs/assets, als .exr in public/hdri/).
  * Werden einmal geladen, per PMREM vorgefiltert und zwischengespeichert. Bis sie da sind, gilt getStudioEnv().
  */
-export type Hdri = "night" | "studio" | "city";
+export type Hdri = "night" | "night-2k" | "studio" | "city";
 const hdris = new Map<Hdri, Promise<THREE.Texture>>();
 export function loadHdri(gl: THREE.WebGLRenderer, name: Hdri) {
   let p = hdris.get(name);

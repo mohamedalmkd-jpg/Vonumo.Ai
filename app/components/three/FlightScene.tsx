@@ -7,6 +7,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { applyHdri, pointer } from "./env";
+import { setMaxAnisotropy } from "./pbr";
 import { CHAPTERS, MOVES, flight, hero } from "./flight";
 import { Studio } from "./Studio";
 
@@ -102,18 +103,24 @@ const FRAG = `
     vec2 dir = vUv - uCenter;
     float d = length(dir * vec2(uAspect, 1.));
     float k = uBlur * smoothstep(0.05, 0.7, d);
-    vec3 col = vec3(0.); float tot = 0.;
-    float j = hash(gl_FragCoord.xy + uTime);
-    for (int i = 0; i < 14; i++) {
-      float t = (float(i) + j) / 14.;
-      float w = 1. - t * 0.5;
-      vec2 uv = vUv - dir * t * k;
-      col += vec3(texture2D(tMap, uv + dir * k * 0.012).r, texture2D(tMap, uv).g, texture2D(tMap, uv - dir * k * 0.012).b) * w;
-      tot += w;
+    vec3 col;
+    if (k < 0.002) {
+      col = texture2D(tMap, vUv).rgb;                        // Ruhe: ein Abtastpunkt, volle Schärfe
+    } else {
+      // Bewegungsunschärfe nur während der Kamerafahrt
+      col = vec3(0.); float tot = 0.;
+      float j = hash(gl_FragCoord.xy + uTime);
+      for (int i = 0; i < 14; i++) {
+        float t = (float(i) + j) / 14.;
+        float w = 1. - t * 0.5;
+        vec2 uv = vUv - dir * t * k;
+        col += vec3(texture2D(tMap, uv + dir * k * 0.012).r, texture2D(tMap, uv).g, texture2D(tMap, uv - dir * k * 0.012).b) * w;
+        tot += w;
+      }
+      col /= tot;
     }
-    col /= tot;
-    col *= mix(1., smoothstep(1.25, 0.2, d), 0.6);         // Vignette
-    col += (hash(gl_FragCoord.xy * 0.5 + fract(uTime) * 91.) - 0.5) * 0.018; // Korn
+    col *= mix(1., smoothstep(1.35, 0.25, d), 0.45);       // Vignette (dezent)
+    col += (hash(gl_FragCoord.xy * 0.5 + fract(uTime) * 91.) - 0.5) * 0.006; // feines Korn gegen Banding
     gl_FragColor = vec4(col * uFade, 1.);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -128,11 +135,13 @@ function Flight() {
   // Szene → (MSAA) → Bloom; Ergebnis liest die Unschärfe-Fläche als Textur
   const composer = useMemo(() => {
     const w = Math.max(2, Math.round(size.width * viewport.dpr)), h = Math.max(2, Math.round(size.height * viewport.dpr));
-    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: mobile ? 0 : 4 });
+    // 4×MSAA auch auf dem Telefon (auf Kachel-GPUs fast kostenlos) → glatte Kanten ohne höhere Pixeldichte
+    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: Math.min(4, gl.capabilities.maxSamples) });
     const c = new EffectComposer(gl, rt);
     c.renderToScreen = false;
     c.addPass(new RenderPass(scene, cam));
-    c.addPass(new UnrealBloomPass(new THREE.Vector2(w / (mobile ? 4 : 2), h / (mobile ? 4 : 2)), mobile ? 0.25 : 0.55, mobile ? 0.3 : 0.5, 1.0));
+    // Bloom zurückhaltend: nur echte Lichtquellen (Schwelle 1,0) glühen, Details bleiben lesbar
+    c.addPass(new UnrealBloomPass(new THREE.Vector2(w / 2, h / 2), mobile ? 0.16 : 0.3, 0.35, 1.0));
     return c;
   }, [gl, scene, cam, size.width, size.height, viewport.dpr, mobile]);
   useEffect(() => () => composer.dispose(), [composer]);
@@ -148,10 +157,12 @@ function Flight() {
   useEffect(() => {
     // Nacht-HDRI (Poly Haven) für physikalisch plausible Spiegelungen auf Glas, Metall und Boden
     scene.environmentIntensity = 0.4;
-    const stopHdri = applyHdri(gl, scene, "night", 0.32);
+    setMaxAnisotropy(gl.capabilities.getMaxAnisotropy());
+    // Desktop: 2k-HDRI (schärfere Spiegelungen auf Glas, Metall und nassem Stein), Telefon: 1k
+    const stopHdri = applyHdri(gl, scene, mobile ? "night" : "night-2k", 0.32);
     // Schatten (nur Desktop): Mondlicht wirft den Pavillon auf den nassen Vorplatz
     gl.shadowMap.enabled = !mobile; gl.shadowMap.type = THREE.PCFSoftShadowMap;
-    scene.fog = new THREE.Fog("#0e1436", 70, 460); // Luftperspektive: Gebirge bleibt sichtbar, wird nur blauer
+    scene.fog = new THREE.Fog("#0e1436", 160, 900); // nur leichte Luftperspektive: Gebirge bleibt klar lesbar
     st.reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (isCapture()) document.documentElement.dataset.capture = "";
     // Shader vorab kompilieren, damit der erste Scroll nicht ruckelt

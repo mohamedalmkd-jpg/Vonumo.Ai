@@ -84,6 +84,7 @@ We build premium, cinematic, highly interactive websites. Quality target = the o
 - Display type: Outfit Light (300), tight tracking (−0.02 to −0.03em). `.dot` now maps to Outfit Light uppercase. Body: Outfit 15px.
 - Components: `.hud` panels (1px line border, blurred panel bg), `.brackets` corner ticks, `.btn` with bottom‑up fill on hover.
 - 3D: glossy dark physical material, blue key light + warm fill, real HDRIs via `applyHdri` (procedural studio env as fallback).
+- Real assets (CC0, Poly Haven): PBR textures in `public/tex/*.webp` (loaded via `three/pbr.ts`, max anisotropy), models in `public/models/<name>/` (glTF + WebP, `three/Models.tsx`), night HDRI `moonlit_golf` as half-float DWAA EXR (`night.exr` 1k mobile, `night-2k.exr` desktop). No primitive stand-ins for furniture or plants.
 - Layout: max width 1400px, gutters 16px (mobile) / 24px (≥sm). No horizontal scroll at any width.
 
 ## Motion rules
@@ -94,7 +95,7 @@ We build premium, cinematic, highly interactive websites. Quality target = the o
 - `prefers-reduced-motion`: no Lenis, no scrubbed transforms, 3D static; content must still be fully visible.
 
 ## Performance budget
-- 60fps on desktop, stable ≥45fps on recent iPhone. DPR capped (mobile ≤1.4, desktop ≤1.8).
+- 60fps on desktop, stable ≥45fps on recent iPhone. DPR adaptive between 1 and the cap (mobile ≤1.5, desktop ≤1.8), never below 1 CSS pixel. The hero render target uses 4×MSAA on all devices (cheap on Apple tile GPUs) instead of rendering at 3×. `?dpr=1.5` forces a fixed DPR for QA close-ups.
 - Pause rendering when tab hidden (already done) and when the 3D object is off‑screen / invisible.
 - Animate only `transform`/`opacity` in DOM; avoid animating layout, `filter` on large areas, or `backdrop-filter` during scroll.
 - Lazy‑load three.js (`next/dynamic`, `ssr:false`); no blocking assets above the fold; compress any new textures/models (KTX2/Draco/meshopt).
