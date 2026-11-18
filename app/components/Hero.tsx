@@ -173,11 +173,11 @@ export function Hero() {
             ))}
           </h2>
           <div className="absolute bottom-6 left-4 sm:left-6">
-            <div data-card className="brackets relative h-[7.5rem] w-[12rem] border border-line-2 sm:h-[8.5rem] sm:w-[14rem]">
+            <div data-card className="brackets relative h-[7.5rem] w-[14rem] border border-line-2 sm:h-[8.5rem]">
               <DetailObject className="absolute inset-0" />
             </div>
             {/* Referenz: segmentiertes Etikett unter der Karte */}
-            <p data-up className="mt-3 flex w-[12rem] border border-line-2 font-mono text-[10px] uppercase tracking-[0.16em] text-fg/85 sm:w-[14rem]">
+            <p data-up className="mt-3 flex w-[14rem] border border-line-2 font-mono text-[10px] uppercase tracking-[0.08em] text-fg/85 sm:tracking-[0.14em]">
               {["Material", "Licht", "Form"].map((w, k) => <span key={w} className={`flex-1 py-1.5 text-center ${k ? "border-l border-line-2" : ""}`}>{w}</span>)}
             </p>
             <a data-up href="#leistungen" className="btn pointer-events-auto mt-3 !py-2" data-scramble-host><Scramble text="Leistungen ansehen" hover onView={false} /><span aria-hidden="true">↗</span></a>

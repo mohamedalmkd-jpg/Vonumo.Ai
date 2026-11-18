@@ -25,7 +25,8 @@ const path = (p: Pose[]): Path => ({
  */
 const WIDE = {
   move1: path([
-    { pos: v(-6.6, 0.85, 12.2), tgt: v(-0.6, 2.4, 0) },
+    // Referenz-Totale: Pavillon rechts der Mitte, Bergkette darüber, Platz für die Headline links
+    { pos: v(-8.6, 1.05, 17.5), tgt: v(-3.2, 2.9, 0) },
     { pos: v(-5.8, 1.3, 9.8), tgt: v(0.6, 2.8, 0) },
     { pos: v(-4.4, 1.7, 7.6), tgt: v(2.4, 3.0, 0) },
   ]),

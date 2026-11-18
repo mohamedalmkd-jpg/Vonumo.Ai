@@ -206,10 +206,10 @@ function Plaza({ mobile }: { mobile: boolean }) {
       <mesh rotation-x={-Math.PI / 2} position-y={0} receiveShadow>
         <planeGeometry args={[150, 150]} />
         {mobile || !on ? (
-          <meshStandardMaterial {...t} color="#0b0d14" roughness={0.3} metalness={0.55} normalScale={new THREE.Vector2(0.25, 0.25)} envMapIntensity={0.8} />
+          <meshStandardMaterial {...t} color="#0b0d14" roughness={0.42} metalness={0.5} normalScale={new THREE.Vector2(0.25, 0.25)} envMapIntensity={0.45} />
         ) : (
           <MeshReflectorMaterial resolution={1024} mirror={1} mixBlur={0.45} mixStrength={10} mixContrast={1.15} blur={[260, 70]} depthScale={0}
-            normalMap={t.normalMap} normalScale={new THREE.Vector2(0.18, 0.18)} roughnessMap={t.roughnessMap} roughness={0.2} metalness={0.6} color="#10131c" envMapIntensity={0.6} />
+            normalMap={t.normalMap} normalScale={new THREE.Vector2(0.18, 0.18)} roughnessMap={t.roughnessMap} roughness={0.2} metalness={0.6} color="#10131c" envMapIntensity={0.3} />
         )}
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position-y={-0.02}><planeGeometry args={[600, 600]} /><meshStandardMaterial color="#030407" roughness={0.9} /></mesh>
@@ -352,7 +352,8 @@ export function Studio({ mobile }: { mobile: boolean }) {
       <Stars count={mobile ? 1800 : 4200} />
       <hemisphereLight args={["#24305e", "#020306", 0.25]} />
       <directionalLight position={[-30, 40, 30]} intensity={2.2} color="#b8c4ff" castShadow={!mobile} shadow-mapSize={[2048, 2048]} shadow-bias={-0.0004} shadow-normalBias={0.03} shadow-camera-left={-16} shadow-camera-right={16} shadow-camera-top={16} shadow-camera-bottom={-16} shadow-camera-near={10} shadow-camera-far={110} />
-      <directionalLight position={[12, 18, -40]} intensity={mobile ? 1.1 : 1.6} color="#5a6bff" />
+      {/* schwaches blaues Gegenlicht – stärker erzeugt einen Glanzfleck im nassen Boden */}
+      <directionalLight position={[12, 18, -40]} intensity={0.45} color="#5a6bff" />
       <group position-y={-SINK}>
       <pointLight position={[0.6, FLOOR + 1.6, -0.8]} intensity={6} distance={9} decay={2} color="#ffd2a0" />
       {/* Blau wäscht den Marmor von rechts, links bleibt warm (Referenz) */}
