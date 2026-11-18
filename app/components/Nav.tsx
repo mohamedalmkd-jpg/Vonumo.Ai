@@ -50,7 +50,7 @@ export function Nav() {
             </ul>
           </nav>
           <div className="flex items-center gap-3">
-            <a href="#termin" className="btn hidden !px-4 !py-2 sm:inline-flex" data-scramble-host><Scramble text="Termin buchen" hover onView={false} /><span aria-hidden="true">↗</span></a>
+            <a href="#termin" className="btn hidden !px-4 !py-2 sm:inline-flex" data-scramble-host><Scramble text="Projekt starten" hover onView={false} /><span aria-hidden="true">↗</span></a>
             {/* rundes Menü-Symbol wie in der Referenz – auf allen Breiten */}
             <button type="button" className="grid h-9 w-9 place-items-center rounded-full border border-line-2 transition-colors hover:border-fg" aria-expanded={open} aria-controls="mnav" aria-label={open ? "Menü schließen" : "Menü öffnen"} onClick={() => setOpen((o) => !o)}>
               <span className="relative block h-2.5 w-3.5">

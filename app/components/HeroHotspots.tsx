@@ -27,7 +27,7 @@ export function HeroHotspots() {
     let raf = 0, cur: 0 | 1 | -1 = -1;
     const tick = () => {
       // sichtbar nur in den Ruhe-Kapiteln mit passender Aufnahme
-      const want: 0 | 1 | -1 = !hero.ready ? -1 : flight.chapter === 0 ? 0 : flight.chapter === 2 ? 1 : -1;
+      const want: 0 | 1 | -1 = !hero.ready ? -1 : flight.chapter === 0 ? 0 : flight.chapter === 3 ? 1 : -1;
       if (want !== cur) { cur = want; setShot(want); setOpen(null); }
       SPOTS.forEach((s, i) => {
         const el = refs.current[i];

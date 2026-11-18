@@ -15,16 +15,29 @@ export const flight = {
   chapter: 0,
 };
 
-/** Ruhebereiche (Kapitel) und Kamerafahrten auf der Fortschrittsachse. */
+/**
+ * Ruhebereiche (Kapitel) und Kamerafahrten auf der Fortschrittsachse 0…1 (eine durchgehende Kamerafahrt):
+ * 01 Totale → 02 näher am Studio → 03 Fassade/Einblick → durch das Glas → 04 Arbeitsplätze (Bildschirme starten)
+ * → 05 V-Skulptur mit Bildschirmwand → 06 Schlussbild. Gleicher Fortschritt = gleicher Szenenzustand (deterministisch).
+ */
 export const CHAPTERS = [
-  { from: 0, to: 0.06 },
-  { from: 0.3, to: 0.52 },
-  { from: 0.82, to: 1 },
+  { from: 0, to: 0.04 },
+  { from: 0.15, to: 0.24 },
+  { from: 0.35, to: 0.44 },
+  { from: 0.6, to: 0.7 },
+  { from: 0.8, to: 0.87 },
+  { from: 0.95, to: 1 },
 ] as const;
-export const MOVES = [
-  { from: 0.06, to: 0.3 },
-  { from: 0.52, to: 0.82 },
-] as const;
+export const MOVES = CHAPTERS.slice(0, -1).map((c, i) => ({ from: c.to, to: CHAPTERS[i + 1].from }));
+
+/** Kapitel zum Fortschritt p (−1 = Kamerafahrt). */
+export const chapterAt = (p: number) => CHAPTERS.findIndex((c) => p >= c.from && p <= c.to);
+
+/**
+ * Start-Zustand eines Bildschirms 0…1 aus dem Scroll-Fortschritt (deterministisch, rückwärts umkehrbar).
+ * 0 = aus, bis 0,35 Hintergrundlicht, bis 0,7 VONUMO-Startbild, darüber Inhalt.
+ */
+export const bootAt = (p: number, start: number, len = 0.05) => Math.min(1, Math.max(0, (p - start) / len));
 
 /** Aktive Disziplin im Leistungsbereich (DOM schreibt, ServicesObject liest). */
 export const services = { active: 0 };

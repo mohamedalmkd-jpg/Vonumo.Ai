@@ -4,13 +4,12 @@ export const CONTACT = {
   phoneHref: "tel:+4915906712485",
 };
 
-// Hauptnavigation wie im Referenz-Layout (Leistungen · Projekte · Studio · … · Kontakt).
+// Hauptnavigation wie vom Inhaber vorgegeben: Leistungen · Projekte · Studio · Kontakt + „Projekt starten“.
 // „Blog“ aus der Referenz fehlt bewusst: es gibt noch keine Blog-Inhalte (kein toter Link).
 export const NAV = [
   { href: "#leistungen", label: "Leistungen" },
   { href: "#arbeiten", label: "Projekte" },
   { href: "#ebenen", label: "Studio" },
-  { href: "#preise", label: "Preise" },
   { href: "#kontakt", label: "Kontakt" },
 ] as const;
 

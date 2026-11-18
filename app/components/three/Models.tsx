@@ -7,8 +7,9 @@ import * as THREE from "three";
  * Echte, professionell modellierte Möbel und Pflanzen (Poly Haven, CC0) statt Grundkörpern.
  * Dateien: public/models/<name>/<name>.gltf (+ .bin, WebP-Texturen 1k). Maße sind reale Meter.
  */
-export type ModelName = "sofa_02" | "coffee_table_round_01" | "mid_century_lounge_chair" | "potted_plant_02";
-const url = (n: ModelName) => `/models/${n}/${n}.gltf`;
+export type ModelName = "sofa_02" | "coffee_table_round_01" | "mid_century_lounge_chair" | "potted_plant_02" | "chair";
+// „chair“ = eigener Bürostuhl aus Blender (scripts/blender/props.py), die übrigen = Poly Haven
+const url = (n: ModelName) => (n === "chair" ? "/models/chair/chair.glb" : `/models/${n}/${n}.gltf`);
 
 export function Model({ name, position, rotation = 0, scale = 1, envMapIntensity = 1, shadows = true }: {
   name: ModelName; position: [number, number, number]; rotation?: number; scale?: number; envMapIntensity?: number; shadows?: boolean;

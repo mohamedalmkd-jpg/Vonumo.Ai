@@ -9,6 +9,9 @@ const P: Record<string, React.ReactNode> = {
   plus: <path d="M12 5v14M5 12h14" />,
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
   mail: <><rect x="3" y="5" width="18" height="14" /><path d="M3 6l9 7 9-7" /></>,
+  layers: <path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5M3 17l9 5 9-5" />,
+  bars: <path d="M4 20V12M10 20V6M16 20v-9M22 20H2M20 20V3" />,
+  chip: <><rect x="7" y="7" width="10" height="10" /><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4" /></>,
   phone: <path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2" />,
 };
 export function Icon({ name, size = 18, className }: { name: keyof typeof P | string; size?: number; className?: string }) {

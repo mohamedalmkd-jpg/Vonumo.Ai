@@ -3,16 +3,13 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera, View } from "@react-three/drei";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { getStudioEnv, makeFacetedV } from "./env";
+import { getStudioEnv, makeFacetedV, vMaterials } from "./env";
 import { flight } from "./flight";
 
 function Macro({ chapters }: { chapters: number[] }) {
   const ref = useRef<THREE.Mesh>(null);
   const geo = useMemo(makeFacetedV, []);
-  const mats = useMemo(() => [
-    new THREE.MeshPhysicalMaterial({ color: "#020308", metalness: 0.7, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 2.2 }),
-    new THREE.MeshPhysicalMaterial({ color: "#0b1660", metalness: 0.75, roughness: 0.08, clearcoat: 1, emissive: new THREE.Color("#1438ff"), emissiveIntensity: 0.3, envMapIntensity: 2.4 }),
-  ], []);
+  const mats = useMemo(vMaterials, []);
   const { gl, scene } = useThree();
   const bg = useMemo(() => new THREE.Color("#05060b"), []);
   useEffect(() => { scene.environment = getStudioEnv(gl); }, [gl, scene]);

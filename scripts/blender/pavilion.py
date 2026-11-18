@@ -178,13 +178,13 @@ n_sl = int((FRONT - 0.3 - (BACK + 0.2)) / 0.11)
 for i in range(n_sl):
     z = BACK + 0.2 + 0.11 * (i + 0.5)
     box(f"slat_{i:02d}", (0.06, H - 0.08, 0.05), (LEFT + 0.36, FLOOR + (H - 0.08) / 2, z), M["oak"], 0.004, 1)
-box("desk_top", (3.6, 0.04, 1.0), (-2.0, FLOOR + 0.75, -2.2), M["walnut"], 0.008)
-for x in (-3.66, -0.34):
-    box(f"desk_leg_{x}", (0.04, 0.73, 0.9), (x, FLOOR + 0.365, -2.2), M["metal"], 0.004)
-box("desk_modesty", (3.2, 0.32, 0.02), (-2.0, FLOOR + 0.5, -2.62), M["metal"], 0.003)
-for x, rot in ((-2.8, 0.05), (-1.6, -0.05)):
-    box(f"mon_neck_{x}", (0.05, 0.33, 0.03), (x, FLOOR + 0.93, -2.5), M["metal"], 0.006)
-    box(f"mon_base_{x}", (0.26, 0.012, 0.18), (x, FLOOR + 0.776, -2.43), M["metal"], 0.004)
+# two workstation rows (monitors and chairs are separate props: scripts/blender/props.py)
+for row, z in (("a", -2.2), ("b", 0.1)):
+    box(f"desk_top_{row}", (3.6, 0.04, 1.0), (-2.0, FLOOR + 0.75, z), M["walnut"], 0.008)
+    for x in (-3.66, -0.34):
+        box(f"desk_leg_{row}{x}", (0.04, 0.73, 0.9), (x, FLOOR + 0.365, z), M["metal"], 0.004)
+    box(f"desk_modesty_{row}", (3.2, 0.32, 0.02), (-2.0, FLOOR + 0.5, z - 0.42), M["metal"], 0.003)
+    box(f"desk_tray_{row}", (3.0, 0.06, 0.18), (-2.0, FLOOR + 0.66, z - 0.3), M["metal"], 0.003)
 
 # ---------------------------------------------------------------- apply modifiers, UV0 in metres (box projection), join
 bpy.ops.object.select_all(action="DESELECT")

@@ -3,12 +3,13 @@ import { useFrame } from "@react-three/fiber";
 import { MeshReflectorMaterial } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { makeFacetedV, makeVOutline } from "./env";
+import { makeFacetedV, makeVOutline, vMaterials } from "./env";
 import { flight } from "./flight";
 import { Model, preloadModels } from "./Models";
 import { PavilionModel } from "./Pavilion";
 import { pbrSet, tex } from "./pbr";
-import { makeMarble, makeScreen, makeSign, type ScreenKind } from "./textures";
+import { makeMarble, makeSign } from "./textures";
+import { Monitor, ScreenGlow, useDemoScreen, type DemoKind } from "./Screens";
 
 /*
  * VONUMO-Studio bei Nacht (Zielbild: Mockups des Inhabers, Nov. 2026): nasser, spiegelnder Vorplatz,
@@ -213,29 +214,42 @@ function Box({ args, position, mat, rotation }: { args: [number, number, number]
   return <mesh position={position} rotation={rotation} material={mat} castShadow receiveShadow><boxGeometry args={args} /></mesh>;
 }
 
-function Screen({ kind, position, rot, w = 2.1 }: { kind: ScreenKind; position: [number, number, number]; rot: number; w?: number }) {
-  const tex = useMemo(() => makeScreen(kind), [kind]);
-  const tint = useMemo(() => new THREE.Color(1.25, 1.25, 1.35), []);
-  const h = w * 0.625;
+/** Wandbildschirm (Rahmen + animierte Oberfläche), startet mit dem Scroll-Fortschritt. */
+function Screen({ kind, start, position, rot, w = 2.1 }: { kind: DemoKind; start: number; position: [number, number, number]; rot: number; w?: number }) {
+  const mat = useDemoScreen(kind, start);
+  const h = w * 0.5625;
   return (
     <group position={position} rotation-y={rot}>
-      <mesh position-z={-0.03}><boxGeometry args={[w + 0.08, h + 0.08, 0.04]} /><meshStandardMaterial color="#05060a" metalness={0.8} roughness={0.3} /></mesh>
-      <mesh><planeGeometry args={[w, h]} /><meshBasicMaterial map={tex} toneMapped={false} color={tint} /></mesh>
+      <mesh position-z={-0.03} castShadow><boxGeometry args={[w + 0.06, h + 0.06, 0.04]} /><meshStandardMaterial color="#05060a" metalness={0.8} roughness={0.3} /></mesh>
+      <mesh material={mat}><planeGeometry args={[w, h]} /></mesh>
     </group>
   );
 }
 
-preloadModels(["sofa_02", "coffee_table_round_01", "mid_century_lounge_chair", "potted_plant_02"]);
+/*
+ * Start der Bildschirme auf der Fortschrittsachse (flight.CHAPTERS): Arbeitsplätze fahren beim Eintritt in den
+ * Innenraum nacheinander hoch (fertig im Kapitel 04), die Bildschirmwand um das V beim Weg zur Skulptur (Kapitel 05).
+ */
+const DESK_BOOT = [0.54, 0.565, 0.59, 0.61, 0.625];
+const WALL_BOOT = [0.72, 0.738, 0.756, 0.774, 0.792];
+const SIDE_BOOT = [0.6, 0.76];
+
+preloadModels(["sofa_02", "coffee_table_round_01", "potted_plant_02", "chair"]);
 
 /** Arbeitsplatz, Lounge und Pflanzen: echte Modelle (Poly Haven) + Nussbaum-Tisch mit Fase. */
 function Furniture({ mobile }: { mobile: boolean }) {
   return (
     <group>
-      <Screen kind="ui" position={[-2.8, FLOOR + 1.12, -2.45]} rot={0.05} w={0.95} />
-      <Screen kind="code" position={[-1.6, FLOOR + 1.12, -2.45]} rot={-0.05} w={0.95} />
       <Suspense fallback={null}>
-        <Model name="mid_century_lounge_chair" position={[-2.8, FLOOR, -1.45]} rotation={Math.PI} envMapIntensity={0.6} />
-        <Model name="mid_century_lounge_chair" position={[-1.5, FLOOR, -1.4]} rotation={Math.PI + 0.35} envMapIntensity={0.6} />
+        {/* Arbeitsplätze: Monitore (Blender) auf zwei Tischreihen, Bürostühle (Blender) */}
+        <Monitor kind="code" start={DESK_BOOT[0]} position={[-3.0, FLOOR + 1.166, -2.45]} rotation={0.12} />
+        <Monitor kind="trade" start={DESK_BOOT[1]} position={[-2.0, FLOOR + 1.166, -2.45]} rotation={0.18} />
+        <Monitor kind="dash" start={DESK_BOOT[2]} position={[-1.0, FLOOR + 1.166, -2.45]} rotation={0.26} />
+        <Monitor kind="ai" start={DESK_BOOT[3]} position={[-2.7, FLOOR + 1.166, -0.15]} rotation={0.14} shadows={!mobile} />
+        <Monitor kind="wave" start={DESK_BOOT[4]} position={[-1.45, FLOOR + 1.166, -0.15]} rotation={0.22} shadows={!mobile} />
+        <Model name="chair" position={[-2.6, FLOOR, -1.45]} rotation={0.25} envMapIntensity={0.7} />
+        <Model name="chair" position={[-1.2, FLOOR, -1.5]} rotation={-0.2} envMapIntensity={0.7} />
+        {!mobile && <Model name="chair" position={[-2.3, FLOOR, 0.85]} rotation={0.1} envMapIntensity={0.7} />}
         <Model name="sofa_02" position={[3.6, FLOOR, 1.85]} rotation={Math.PI} scale={1.15} envMapIntensity={0.8} />
         <Model name="coffee_table_round_01" position={[3.6, FLOOR, 0.55]} scale={0.85} envMapIntensity={0.9} />
         <Model name="potted_plant_02" position={[-4.85, FLOOR, 2.6]} scale={1.7} rotation={0.6} />
@@ -254,10 +268,7 @@ function Sculpture() {
   const top = FLOOR + 0.6, cy = top + 0.9;
   // leichtes Pendeln um die Ansicht aus Kapitel „Erlebnis“, minimales Schweben
   useFrame(() => { if (ref.current) { const t = flight.time; ref.current.rotation.y = -0.1 + Math.sin(t * 0.3) * 0.14; ref.current.position.y = cy + Math.sin(t * 0.7) * 0.03; } });
-  const m = useMemo(() => [
-    new THREE.MeshPhysicalMaterial({ color: "#020308", metalness: 0.7, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 2.2 }),
-    new THREE.MeshPhysicalMaterial({ color: "#0b1660", metalness: 0.75, roughness: 0.08, clearcoat: 1, emissive: new THREE.Color("#1438ff"), emissiveIntensity: 0.16, envMapIntensity: 2.4 }),
-  ], []);
+  const m = useMemo(vMaterials, []);
   const ring = useMemo(() => glow("#38b8ff", 4.2), []);
   const ring2 = useMemo(() => glow("#2f6bff", 1.6), []);
   return (
@@ -270,6 +281,20 @@ function Sculpture() {
       <group ref={ref} position-y={cy}>
         <mesh geometry={geo} material={m} scale={0.7} castShadow />
       </group>
+      {/* Lichtring über der Skulptur (Referenz 05/06) */}
+      <mesh position-y={CEIL - 0.25} rotation-x={Math.PI / 2}><torusGeometry args={[2.1, 0.022, 12, 160]} /><meshBasicMaterial color={new THREE.Color("#ffe6c4").multiplyScalar(2.6)} toneMapped={false} /></mesh>
+      {/* Bildschirmwand im Halbkreis hinter dem V: große Displays auf schlanken Säulen, fahren nacheinander hoch */}
+      {[-72, -36, 0, 36, 72].map((deg, i) => {
+        const a = (deg * Math.PI) / 180, r = 1.85, x = Math.sin(a) * r, z = -Math.cos(a) * r;
+        return (
+          <group key={deg} position={[x, 0, z]} rotation-y={-a}>
+            <Monitor kind={(["code", "ai", "trade", "wave", "dash"] as const)[i]} start={WALL_BOOT[i]} position={[0, FLOOR + 1.62, 0]} scale={2.1} stand={false} />
+            <mesh position-y={FLOOR + 0.6} castShadow><cylinderGeometry args={[0.035, 0.035, 1.2, 20]} /><meshStandardMaterial color="#1a1c22" metalness={0.9} roughness={0.3} /></mesh>
+            <mesh position-y={FLOOR + 0.01}><cylinderGeometry args={[0.22, 0.24, 0.02, 40]} /><meshStandardMaterial color="#1a1c22" metalness={0.9} roughness={0.3} /></mesh>
+          </group>
+        );
+      })}
+      <ScreenGlow position={[0, FLOOR + 1.7, -1.2]} starts={WALL_BOOT} intensity={9} color="#8fb0ff" distance={6} />
     </group>
   );
 }
@@ -387,8 +412,9 @@ export function Studio({ mobile }: { mobile: boolean }) {
       {/* Detailliertes Architekturmodell (Blender, scripts/blender/pavilion.py) mit gebackener Umgebungsverdeckung */}
       <Suspense fallback={null}><PavilionModel mobile={mobile} marble={m.marble} /></Suspense>
       {/* Wandbildschirme */}
-      <Screen kind="brand" position={[5.2, 4.05, BACK + 0.2]} rot={0} w={2.0} />
-      <Screen kind="3d" position={[RIGHT - 0.12, 4.0, -1.4]} rot={-Math.PI / 2} w={1.7} />
+      <Screen kind="dash" start={SIDE_BOOT[0]} position={[5.2, 4.05, BACK + 0.2]} rot={0} w={2.0} />
+      <Screen kind="code" start={SIDE_BOOT[1]} position={[RIGHT - 0.12, 4.0, -1.4]} rot={-Math.PI / 2} w={1.7} />
+      <ScreenGlow position={[-2.0, FLOOR + 1.3, -1.6]} starts={DESK_BOOT} intensity={7} />
       <Furniture mobile={mobile} />
       <Sculpture />
 

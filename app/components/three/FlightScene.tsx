@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { applyHdri, pointer } from "./env";
 import { setMaxAnisotropy } from "./pbr";
-import { CHAPTERS, MOVES, flight, hero } from "./flight";
+import { CHAPTERS, MOVES, chapterAt, flight, hero } from "./flight";
 import { Studio } from "./Studio";
 
 const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
@@ -20,58 +20,52 @@ const path = (p: Pose[]): Path => ({
 });
 
 /*
- * Kamera-Keyframes (Referenz: Totale → Fassade → durch das Glas → Innenraum).
- * Querformat: Gebäude rechts der Mitte, Text links. Hochformat: Gebäude unten, Text oben.
+ * Kamera-Ruhepunkte der sechs Kapitel (Weltkoordinaten in Metern) und Zwischenpunkte der Fahrten.
+ * Querformat (WIDE): Motiv rechts, Text links. Hochformat (TALL): Motiv unten, Text oben.
+ * Fahrt 3 führt durch die Glasfront (z = 3,4) in den Innenraum – ohne Szenenwechsel.
  */
-const WIDE = {
-  move1: path([
-    // Referenz-Totale: Pavillon rechts der Mitte, Bergkette darüber, Platz für die Headline links
-    { pos: v(-8.6, 1.05, 17.5), tgt: v(-3.2, 2.9, 0) },
-    { pos: v(-5.8, 1.3, 9.8), tgt: v(0.6, 2.8, 0) },
-    { pos: v(-4.4, 1.7, 7.6), tgt: v(2.4, 3.0, 0) },
-  ]),
-  move2: path([
-    { pos: v(-4.4, 1.7, 7.6), tgt: v(2.4, 3.0, 0) },
-    { pos: v(0.2, 2.1, 7.0), tgt: v(1.6, 2.4, -3) },
-    { pos: v(1.1, 2.15, 4.2), tgt: v(2.0, 2.4, -4) },
-    // Referenz „03 / Erlebnis“: nah, leicht von unten, V-Skulptur füllt die rechte Bildhälfte
-    { pos: v(0.45, 1.5, 0.35), tgt: v(1.55, 2.05, -3.1) },
-  ]),
+type Rig = { rests: Pose[]; via: Pose[][] };
+const WIDE: Rig = {
+  rests: [
+    { pos: v(-8.6, 1.05, 17.5), tgt: v(-3.2, 2.9, 0) },     // 01 Totale
+    { pos: v(-7.0, 1.0, 11.0), tgt: v(1.0, 2.4, 0.5) },     // 02 näher am Studio
+    { pos: v(-4.4, 1.7, 7.6), tgt: v(2.4, 3.0, 0) },        // 03 Fassade, Einblick
+    { pos: v(1.2, 2.05, 1.6), tgt: v(-2.4, 1.55, -2.6) },   // 04 Arbeitsplätze
+    { pos: v(0.45, 1.5, 0.35), tgt: v(1.55, 2.05, -3.1) },  // 05 V-Skulptur
+    { pos: v(2.3, 1.75, 1.7), tgt: v(2.4, 2.15, -2.6) },    // 06 Schlussbild
+  ],
+  via: [[], [], [{ pos: v(0.2, 2.1, 7.0), tgt: v(1.6, 2.4, -3) }, { pos: v(1.4, 2.15, 4.4), tgt: v(0.4, 2.2, -4) }], [], []],
 };
-const TALL = {
-  move1: path([
+const TALL: Rig = {
+  rests: [
     { pos: v(-3.6, 0.6, 19.5), tgt: v(0.7, 5.3, 0) },
-    { pos: v(-5.3, 1.1, 19), tgt: v(0.9, 4.6, 0) },
     { pos: v(-6.2, 1.5, 13.5), tgt: v(1.5, 3.2, 0) },
-  ]),
-  move2: path([
-    { pos: v(-6.2, 1.5, 13.5), tgt: v(1.5, 3.2, 0) },
-    { pos: v(-1.0, 2.2, 7.2), tgt: v(1.2, 2.4, -3) },
-    { pos: v(0.6, 2.3, 3.9), tgt: v(1.6, 2.4, -4) },
+    { pos: v(-3.0, 1.6, 9.0), tgt: v(1.6, 2.8, 0) },
+    { pos: v(1.6, 2.1, 2.5), tgt: v(-2.0, 2.2, -2.6) },
     { pos: v(1.15, 1.8, 0.75), tgt: v(2.35, 2.75, -2.6) },
-  ]),
+    { pos: v(2.4, 1.9, 2.6), tgt: v(2.4, 2.9, -2.6) },
+  ],
+  via: [[], [], [{ pos: v(-1.0, 2.2, 7.2), tgt: v(1.2, 2.4, -3) }, { pos: v(0.9, 2.3, 4.2), tgt: v(0.4, 2.4, -4) }], [], []],
 };
-// Kleiner Vorschub während der Ruhephasen (Referenz: Kamera „atmet“ beim Weiterscrollen)
-const DRIFT = 0.6;
+// Kleiner Vorschub während der Ruhephasen (die Kamera „atmet“ beim Weiterscrollen); Teil der Bahn → keine Sprünge
+const DRIFT = 0.45;
 const smooth = (t: number) => t * t * (3 - 2 * t);
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
+const drifted = (r: Pose) => r.pos.clone().addScaledVector(r.tgt.clone().sub(r.pos).normalize(), DRIFT);
+const buildMoves = (R: Rig): Path[] => R.via.map((via, i) => path([{ pos: drifted(R.rests[i]), tgt: R.rests[i].tgt }, ...via, R.rests[i + 1]]));
+const MOVE_PATHS = { wide: buildMoves(WIDE), tall: buildMoves(TALL) };
 
-function poseAt(p: number, P: typeof WIDE, outPos: THREE.Vector3, outTgt: THREE.Vector3) {
-  const [m1, m2] = MOVES;
-  const [, c1, c2] = CHAPTERS;
-  let curve: Path, t: number, drift = 0;
-  if (p < m1.to) { curve = P.move1; t = smooth(clamp01((p - m1.from) / (m1.to - m1.from))); drift = p < m1.from ? (p / m1.from) * 0.5 : 0; }
-  else if (p < m2.from) { curve = P.move1; t = 1; drift = (p - c1.from) / (c1.to - c1.from); }
-  else if (p < m2.to) { curve = P.move2; t = smooth(clamp01((p - m2.from) / (m2.to - m2.from))); }
-  else { curve = P.move2; t = 1; drift = (p - c2.from) / (c2.to - c2.from); }
-  curve.pos.getPoint(t, outPos);
-  curve.tgt.getPoint(t, outTgt);
-  if (drift) {
-    const dir = _d.subVectors(outTgt, outPos).normalize();
-    outPos.addScaledVector(dir, drift * DRIFT);
+function poseAt(p: number, R: Rig, paths: Path[], outPos: THREE.Vector3, outTgt: THREE.Vector3) {
+  const c = chapterAt(p);
+  if (c >= 0) {
+    const ch = CHAPTERS[c], r = R.rests[c], k = c === 0 ? 0 : clamp01((p - ch.from) / (ch.to - ch.from));
+    outPos.copy(r.pos).lerp(drifted(r), k); outTgt.copy(r.tgt);
+    return;
   }
+  const m = Math.max(0, MOVES.findIndex((mv) => p > mv.from && p < mv.to));
+  const t = smooth(clamp01((p - MOVES[m].from) / (MOVES[m].to - MOVES[m].from)));
+  paths[m].pos.getPoint(t, outPos); paths[m].tgt.getPoint(t, outTgt);
 }
-const _d = new THREE.Vector3();
 
 /*
  * Showreel-Aufnahme (?capture=reel): eigene, durchgehende Kamerafahrt für den vorgerenderten Film
@@ -183,8 +177,7 @@ function Flight() {
       st.blur = Math.min(0.1, Math.max(0, _rp.distanceTo(st.pos) * 24 - 1.5) * 0.008); // analytische Bewegungsunschärfe
     } else {
     flight.time = state.clock.elapsedTime;
-    const P = portrait ? TALL : WIDE;
-    poseAt(flight.p, P, st.wantPos, st.wantTgt);
+    poseAt(flight.p, portrait ? TALL : WIDE, portrait ? MOVE_PATHS.tall : MOVE_PATHS.wide, st.wantPos, st.wantTgt);
 
     // Intro nach dem Ladebildschirm: aus der Ferne heranfahren, aus Schwarz aufblenden
     if (flight.started) st.intro = Math.min(1, st.intro + dt / (st.reduce ? 0.01 : 2.6));
