@@ -8,16 +8,17 @@ import { services } from "./flight";
 import { makeScreen } from "./textures";
 
 /*
- * Schwebende Geräte-Mockups (Laptop + Telefon) für die fünf Disziplinen.
+ * Schwebende Geräte-Mockups (Laptop + Telefon) für die sechs Leistungen.
  * Wechsel: Bildschirm „rollt“ per Wisch-Shader auf das nächste Projekt um, Geräte drehen sich in eine neue Pose.
  */
 type Pose = { ry: number; rx: number; phone: [number, number, number]; pr: number };
 const POSES: Pose[] = [
-  { ry: -0.42, rx: 0.1, phone: [2.15, 0.95, 0.9], pr: -0.35 },  // Webdesign
-  { ry: 0.32, rx: 0.16, phone: [-2.2, 0.9, 0.7], pr: 0.4 },     // Entwicklung
-  { ry: -0.18, rx: 0.06, phone: [1.7, 1.05, 1.5], pr: -0.15 },  // UI/UX
+  { ry: -0.42, rx: 0.1, phone: [2.15, 0.95, 0.9], pr: -0.35 },  // Web Design & UI/UX
   { ry: 0.5, rx: 0.22, phone: [-1.9, 1.15, 1.2], pr: 0.55 },    // 3D
   { ry: -0.3, rx: 0.12, phone: [2.0, 0.85, 1.1], pr: -0.5 },    // KI
+  { ry: 0.32, rx: 0.16, phone: [-2.2, 0.9, 0.7], pr: 0.4 },     // Software
+  { ry: -0.18, rx: 0.06, phone: [1.7, 1.05, 1.5], pr: -0.15 },  // Branding
+  { ry: 0.24, rx: 0.12, phone: [-2.0, 1.0, 1.0], pr: 0.3 },     // Performance
 ];
 
 const VERT = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }`;
@@ -49,8 +50,9 @@ function Devices() {
   ]);
   const code = useMemo(() => makeScreen("code"), []);
   const three = useMemo(() => makeScreen("3d"), []);
-  const desk = useMemo(() => [aeraD, code, koraD, three, pilotD], [aeraD, code, koraD, three, pilotD]);
-  const mob = useMemo(() => [aeraM, mythosM, koraM, aeraM, pilotM], [aeraM, mythosM, koraM, pilotM]);
+  const ui = useMemo(() => makeScreen("ui"), []);
+  const desk = useMemo(() => [aeraD, three, pilotD, code, koraD, ui], [aeraD, three, pilotD, code, koraD, ui]);
+  const mob = useMemo(() => [aeraM, aeraM, pilotM, mythosM, koraM, koraM], [aeraM, pilotM, mythosM, koraM]);
   const { gl, scene } = useThree();
   useEffect(() => {
     const stop = applyHdri(gl, scene, "studio", 1.1);

@@ -93,14 +93,6 @@ export function vMaterials() {
   ];
 }
 
-/** Leuchtende V-Kontur (Wandpaneel im Innenraum der Referenz). */
-export function makeVOutline(width = 0.07) {
-  const s = vShape();
-  s.holes.push(new THREE.Path(vShape(width).getPoints().reverse()));
-  const g = new THREE.ShapeGeometry(s);
-  g.center();
-  return g;
-}
 
 export const pointer = { x: 0, y: 0 };
 if (typeof window !== "undefined") {

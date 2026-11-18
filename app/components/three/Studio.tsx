@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { MeshReflectorMaterial } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { makeFacetedV, makeVOutline, vMaterials } from "./env";
+import { makeFacetedV, vMaterials } from "./env";
 import { flight } from "./flight";
 import { Model, preloadModels } from "./Models";
 import { PavilionModel } from "./Pavilion";
@@ -166,10 +166,16 @@ function SpotDown({ position, intensity = 40, color = "#ffc590", angle = 0.75 }:
 
 /** Dunkles, eingelassenes Paneel in der Marmorwand mit leuchtender V-Kontur (Referenz: Innenraum). */
 function WallLogo({ position }: { position: [number, number, number] }) {
-  const outline = useMemo(() => makeVOutline(0.075), []);
+  // facettiertes V (wie die Skulptur), nur die Fasen leuchten weiß → klare Lichtkontur auf dunklem Paneel
+  const geo = useMemo(makeFacetedV, []);
+  const mats = useMemo(() => [
+    new THREE.MeshStandardMaterial({ color: "#07080c", metalness: 0.9, roughness: 0.25 }),
+    new THREE.MeshStandardMaterial({ color: "#07080c", metalness: 0.9, roughness: 0.25 }),
+    new THREE.MeshBasicMaterial({ color: new THREE.Color("#eef2ff").multiplyScalar(2.4), toneMapped: false }),
+  ], []);
   return (
     <group position={position}>
-      <mesh geometry={outline} position={[0, 0.25, 0.035]} scale={0.36}><meshBasicMaterial color={new THREE.Color("#eef2ff").multiplyScalar(2.2)} toneMapped={false} /></mesh>
+      <mesh geometry={geo} material={mats} position={[0, 0.25, 0.06]} scale={[0.34, 0.34, 0.1]} />
     </group>
   );
 }
@@ -282,7 +288,7 @@ function Sculpture() {
         <mesh geometry={geo} material={m} scale={0.7} castShadow />
       </group>
       {/* Lichtring über der Skulptur (Referenz 05/06) */}
-      <mesh position-y={CEIL - 0.25} rotation-x={Math.PI / 2}><torusGeometry args={[2.1, 0.022, 12, 160]} /><meshBasicMaterial color={new THREE.Color("#ffe6c4").multiplyScalar(2.6)} toneMapped={false} /></mesh>
+      <mesh position-y={CEIL - 0.07} rotation-x={Math.PI / 2}><torusGeometry args={[2.1, 0.018, 10, 160]} /><meshBasicMaterial color={new THREE.Color("#ffe6c4").multiplyScalar(1.5)} toneMapped={false} /></mesh>
       {/* Bildschirmwand im Halbkreis hinter dem V: große Displays auf schlanken Säulen, fahren nacheinander hoch */}
       {[-72, -36, 0, 36, 72].map((deg, i) => {
         const a = (deg * Math.PI) / 180, r = 1.85, x = Math.sin(a) * r, z = -Math.cos(a) * r;
@@ -360,8 +366,8 @@ export function Studio({ mobile }: { mobile: boolean }) {
       {/* Blau wäscht den Marmor von rechts, links bleibt warm (Referenz) */}
       <pointLight position={[5.8, 3.4, -3.7]} intensity={13} distance={10} decay={2} color="#3f6bff" />
       {/* Innenraum gut lesbar durch das Glas (Referenz): weiche, kühle Grundhelligkeit auf Augenhöhe */}
-      <pointLight position={[-1.0, CEIL - 0.6, 0.6]} intensity={7} distance={8} decay={2} color="#cfdcff" />
-      <pointLight position={[4.6, CEIL - 0.6, 0.6]} intensity={7} distance={8} decay={2} color="#cfdcff" />
+      <pointLight position={[-1.0, CEIL - 0.9, 0.6]} intensity={4} distance={8} decay={2} color="#cfdcff" />
+      <pointLight position={[4.6, CEIL - 0.9, 0.6]} intensity={4} distance={8} decay={2} color="#cfdcff" />
       <pointLight position={[-3.6, CEIL - 0.9, -1.6]} intensity={12} distance={7} decay={2} color="#ffd2a0" />
 
 
@@ -414,7 +420,7 @@ export function Studio({ mobile }: { mobile: boolean }) {
       {/* Wandbildschirme */}
       <Screen kind="dash" start={SIDE_BOOT[0]} position={[5.2, 4.05, BACK + 0.2]} rot={0} w={2.0} />
       <Screen kind="code" start={SIDE_BOOT[1]} position={[RIGHT - 0.12, 4.0, -1.4]} rot={-Math.PI / 2} w={1.7} />
-      <ScreenGlow position={[-2.0, FLOOR + 1.3, -1.6]} starts={DESK_BOOT} intensity={7} />
+      <ScreenGlow position={[-2.0, FLOOR + 1.45, -1.9]} starts={DESK_BOOT} intensity={3.2} distance={4} />
       <Furniture mobile={mobile} />
       <Sculpture />
 
