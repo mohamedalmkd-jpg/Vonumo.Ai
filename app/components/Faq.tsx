@@ -10,7 +10,7 @@ export function Faq() {
   return (
     <section id="faq" className="relative mx-auto min-h-[100svh] max-w-[1400px] px-4 py-28 sm:px-6 sm:py-36">
       <div className="grid gap-10 lg:grid-cols-[1fr_minmax(0,40rem)]">
-        <SectionHead index="10" label="FAQ" title="Gut zu wissen." sub="Die häufigsten Fragen – kurz und ehrlich beantwortet." />
+        <SectionHead index="10" label="Insights" title="Gut zu wissen." sub="Die häufigsten Fragen – kurz und ehrlich beantwortet." />
         <div className="border-t border-line">
           {FAQ.map((f, i) => {
             const on = open === i;

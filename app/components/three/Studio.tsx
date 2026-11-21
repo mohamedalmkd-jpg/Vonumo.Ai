@@ -29,7 +29,7 @@ function Sky() {
     fragmentShader: `varying vec3 vP;
       void main(){
         float h = vP.y;
-        vec3 top = vec3(0.006,0.011,0.04), hor = vec3(0.05,0.1,0.3);
+        vec3 top = vec3(0.008,0.014,0.05), hor = vec3(0.07,0.13,0.38);
         vec3 col = mix(hor, top, smoothstep(-0.02, 0.5, h));
         col += vec3(0.08,0.14,0.42) * exp(-abs(h-0.08)*7.0) * 0.5;
         gl_FragColor = vec4(col,1.);
@@ -83,10 +83,13 @@ function terrainMaterial() {
       .replace("#include <common>", `#include <common>\n${TERRAIN_FRAG_HEAD}`)
       .replace("#include <map_fragment>", `
         vec3 tw = triW(normalize(vWN)); vec3 tp = vWP / 28.;
-        vec3 rockC = tri(tRock, tp, tw) * vec3(0.36, 0.42, 0.6);     // Fels im Mondlicht: kühl, nicht braun
-        vec3 snowC = tri(tSnow, tp * 0.6, tw) * vec3(0.55, 0.6, 0.72);
+        vec3 rockC = tri(tRock, tp, tw) * vec3(0.26, 0.32, 0.52);     // Fels im Mondlicht: kühl, nicht braun
+        vec3 snowC = tri(tSnow, tp * 0.6, tw) * vec3(0.95, 1.02, 1.2);
         diffuseColor.rgb = mix(rockC, snowC, vSnow);`)
       .replace("#include <roughnessmap_fragment>", `#include <roughnessmap_fragment>\nroughnessFactor = mix(0.94, 0.62, vSnow);`)
+      .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
+        // Mondlicht auf Schnee: kühles Eigenleuchten, nach oben stärker → helle Grate vor dem Nachthimmel
+        totalEmissiveRadiance += mix(rockC * vec3(0.06, 0.08, 0.16), snowC * vec3(0.42, 0.5, 0.75), vSnow) * smoothstep(10., 160., vWP.y);`)
       .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
         { vec3 wn0 = normalize(vWN); vec3 tw2 = triW(wn0); vec3 tp2 = vWP / 28.;
           vec3 wn = normalize(mix(triN(tRockN, tp2, tw2, wn0), triN(tSnowN, tp2 * 0.6, tw2, wn0), vSnow * 0.7));
@@ -102,7 +105,7 @@ function terrainMaterial() {
  */
 function hash2(x: number, y: number) { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); }
 
-const DEM = { url: "/terrain/alps.png", lo: 1215.6, hi: 4520.3, w: 1900, z0: -640 } as const;
+const DEM = { url: "/terrain/alps.png", lo: 1215.6, hi: 4520.3, w: 2200, z0: -900, x: 0 } as const;
 
 async function loadHeights(): Promise<{ data: Float32Array; cols: number; rows: number }> {
   const blob = await (await fetch(DEM.url)).blob();
@@ -125,7 +128,7 @@ function Peaks({ mobile }: { mobile: boolean }) {
       const depth = DEM.w * (rows / cols); // gleicher Maßstab in x und z (≈0,046 Einheiten pro Meter)
       const g = new THREE.PlaneGeometry(DEM.w, depth, gx, gz);
       g.rotateX(-Math.PI / 2);
-      g.translate(0, 0, DEM.z0 - depth / 2);
+      g.translate(DEM.x, 0, DEM.z0 - depth / 2);
       const p = g.attributes.position;
       for (let iz = 0; iz <= gz; iz++) for (let ix = 0; ix <= gx; ix++) {
         const i = iz * (gx + 1) + ix;
@@ -134,7 +137,7 @@ function Peaks({ mobile }: { mobile: boolean }) {
         const hm = data[r * cols + c];
         const u = ix / gx, v = iz / gz;
         const fade = THREE.MathUtils.smoothstep(v, 0.0, 0.12) * THREE.MathUtils.smoothstep(u, 0, 0.08) * THREE.MathUtils.smoothstep(1 - u, 0, 0.08);
-        const y = (hm - 1900) * 0.046 * 1.8; // Meter → Einheiten; Überhöhung 1,8 = Tele-Wirkung des Referenzbilds
+        const y = (hm - 1900) * 0.046 * 3.0; // Meter → Einheiten; Überhöhung 1,8 = Tele-Wirkung des Referenzbilds
         p.setY(i, Math.max(y, -6) * fade - 6 * (1 - fade));
       }
       g.computeVertexNormals();
@@ -142,7 +145,7 @@ function Peaks({ mobile }: { mobile: boolean }) {
       for (let i = 0; i < p.count; i++) {
         const y = p.getY(i), ny = n.getY(i);
         // Schneegrenze ≈ 2900 m → (2900−1700)·0,046 ≈ 55 Einheiten; steile Flanken bleiben Fels
-        snow[i] = THREE.MathUtils.smoothstep(y + (hash2(p.getX(i), p.getZ(i)) - 0.5) * 10, 70, 110) * THREE.MathUtils.smoothstep(ny, 0.3, 0.62);
+        snow[i] = THREE.MathUtils.smoothstep(y + (hash2(p.getX(i), p.getZ(i)) - 0.5) * 22, 95, 165) * THREE.MathUtils.smoothstep(ny, 0.12, 0.42);
       }
       g.setAttribute("snow", new THREE.BufferAttribute(snow, 1));
       setGeo(g);
@@ -151,6 +154,16 @@ function Peaks({ mobile }: { mobile: boolean }) {
   }, [mobile]);
   useEffect(() => () => geo?.dispose(), [geo]);
   return geo ? <mesh geometry={geo} material={mat} /> : null;
+}
+
+/**
+ * Licht, das nur von außen wirkt: lässt den Innenraum durch die Glasfront hell und blau leuchten (Referenz Kap. 01–02)
+ * und blendet beim Durchfahren der Glasfront (Fortschritt ≈ 0,46–0,56) auf die Innenraum-Stärke ab.
+ */
+function OutsideLight({ out, inside = 0, ...props }: { out: number; inside?: number; position: [number, number, number]; distance: number; color: string }) {
+  const ref = useRef<THREE.PointLight>(null);
+  useFrame(() => { if (ref.current) { const k = THREE.MathUtils.smoothstep(flight.p, 0.46, 0.56); ref.current.intensity = out + (inside - out) * k; } });
+  return <pointLight ref={ref} intensity={out} decay={2} {...props} />;
 }
 
 /** Spot von der Decke senkrecht nach unten: echte Lichtinseln auf Podest und nassem Boden. */
@@ -175,7 +188,7 @@ function WallLogo({ position }: { position: [number, number, number] }) {
   ], []);
   return (
     <group position={position}>
-      <mesh geometry={geo} material={mats} position={[0, 0.25, 0.06]} scale={[0.34, 0.34, 0.1]} />
+      <mesh geometry={geo} material={mats} position={[0, 0.25, 0.06]} scale={[0.55, 0.55, 0.12]} />
     </group>
   );
 }
@@ -207,8 +220,8 @@ function Plaza({ mobile }: { mobile: boolean }) {
         {mobile || !on ? (
           <meshStandardMaterial {...t} color="#0b0d14" roughness={0.42} metalness={0.5} normalScale={new THREE.Vector2(0.25, 0.25)} envMapIntensity={0.45} />
         ) : (
-          <MeshReflectorMaterial resolution={1024} mirror={1} mixBlur={0.45} mixStrength={10} mixContrast={1.15} blur={[260, 70]} depthScale={0}
-            normalMap={t.normalMap} normalScale={new THREE.Vector2(0.18, 0.18)} roughnessMap={t.roughnessMap} roughness={0.2} metalness={0.6} color="#10131c" envMapIntensity={0.3} />
+          <MeshReflectorMaterial resolution={1024} mirror={1} mixBlur={0.25} mixStrength={55} mixContrast={1.3} blur={[110, 30]} depthScale={0}
+            normalMap={t.normalMap} normalScale={new THREE.Vector2(0.18, 0.18)} roughnessMap={t.roughnessMap} roughness={0.18} metalness={0.55} color="#161a26" envMapIntensity={0.45} />
         )}
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position-y={-0.02}><planeGeometry args={[600, 600]} /><meshStandardMaterial color="#030407" roughness={0.9} /></mesh>
@@ -236,9 +249,9 @@ function Screen({ kind, start, position, rot, w = 2.1 }: { kind: DemoKind; start
  * Start der Bildschirme auf der Fortschrittsachse (flight.CHAPTERS): Arbeitsplätze fahren beim Eintritt in den
  * Innenraum nacheinander hoch (fertig im Kapitel 04), die Bildschirmwand um das V beim Weg zur Skulptur (Kapitel 05).
  */
-const DESK_BOOT = [0.54, 0.565, 0.59, 0.61, 0.625];
+const DESK_BOOT = [-1, -1, -1, -1, -1];
 const WALL_BOOT = [0.72, 0.738, 0.756, 0.774, 0.792];
-const SIDE_BOOT = [0.6, 0.76];
+const SIDE_BOOT = [-1, -1];
 
 preloadModels(["sofa_02", "coffee_table_round_01", "potted_plant_02", "chair"]);
 
@@ -258,9 +271,9 @@ function Furniture({ mobile }: { mobile: boolean }) {
         {!mobile && <Model name="chair" position={[-2.3, FLOOR, 0.85]} rotation={0.1} envMapIntensity={0.7} />}
         <Model name="sofa_02" position={[3.6, FLOOR, 1.85]} rotation={Math.PI} scale={1.15} envMapIntensity={0.8} />
         <Model name="coffee_table_round_01" position={[3.6, FLOOR, 0.55]} scale={0.85} envMapIntensity={0.9} />
-        <Model name="potted_plant_02" position={[-4.85, FLOOR, 2.6]} scale={1.7} rotation={0.6} />
+        <Model name="potted_plant_02" position={[-2.7, FLOOR, 2.75]} scale={2.5} rotation={0.6} />
         <Model name="potted_plant_02" position={[6.1, FLOOR, -3.9]} scale={1.9} rotation={2.1} />
-        {!mobile && <Model name="potted_plant_02" position={[6.15, FLOOR, 2.7]} scale={1.5} rotation={4.0} />}
+        <Model name="potted_plant_02" position={[6.1, FLOOR, 2.75]} scale={2.5} rotation={4.0} />
         {!mobile && <Model name="potted_plant_02" position={[0.2, FLOOR, -4.0]} scale={1.3} rotation={1.2} />}
       </Suspense>
     </group>
@@ -303,7 +316,7 @@ function Sculpture() {
           </group>
         );
       })}
-      <ScreenGlow position={[0, FLOOR + 1.7, -1.2]} starts={WALL_BOOT} intensity={9} color="#8fb0ff" distance={6} />
+      <ScreenGlow position={[0, FLOOR + 1.7, -1.2]} starts={WALL_BOOT} intensity={5} color="#6f95ff" distance={5} />
     </group>
   );
 }
@@ -343,7 +356,7 @@ export function Studio({ mobile }: { mobile: boolean }) {
     return {
       // Licht hinter den Lamellen: warm leuchtende Rückwand
       woodWall: new THREE.MeshBasicMaterial({ color: new THREE.Color("#ffb070").multiplyScalar(0.55) }),
-      marble: new THREE.MeshStandardMaterial({ map: makeMarble(), roughness: 0.38, metalness: 0.05, color: "#8a8f9e" }),
+      marble: new THREE.MeshStandardMaterial({ map: makeMarble(), roughness: 0.32, metalness: 0.05, color: "#5e6271" }),
       floor: new THREE.MeshStandardMaterial({ ...floor, color: "#121318", roughness: 0.75, metalness: 0.25, envMapIntensity: 0.45 }),
       ceiling: new THREE.MeshStandardMaterial({ color: "#16171c", roughness: 0.7, metalness: 0.1, side: THREE.DoubleSide }),
       glass: new THREE.MeshPhysicalMaterial({ color: "#dfe5ff", roughness: 0.02, metalness: 0, transparent: true, opacity: 0.05, envMapIntensity: 0.35, specularIntensity: 1, side: THREE.DoubleSide, depthWrite: false }),
@@ -367,10 +380,15 @@ export function Studio({ mobile }: { mobile: boolean }) {
       <group position-y={-SINK}>
       <pointLight position={[0.6, FLOOR + 1.6, -0.8]} intensity={6} distance={9} decay={2} color="#ffd2a0" />
       {/* Blau wäscht den Marmor von rechts, links bleibt warm (Referenz) */}
-      <pointLight position={[5.8, 3.4, -3.7]} intensity={13} distance={10} decay={2} color="#3f6bff" />
+      <OutsideLight position={[5.8, 3.4, -3.7]} out={20} inside={6} distance={12} color="#3f6bff" />
+      <OutsideLight position={[1.0, 3.2, 2.2]} out={9} distance={9} color="#4d7bff" />
+      {/* Innenraum leuchtet blau durch die Glasfront (Referenz Kap. 1–2): Rückwand und Decke hell angestrahlt */}
+      <OutsideLight position={[3.6, CEIL - 0.6, -2.2]} out={22} distance={11} color="#3d6dff" />
+      {/* warmes Streiflicht auf der Marmorwand mit dem V (Referenz Kap. 04) */}
+      <pointLight position={[0.4, CEIL - 0.5, BACK + 1.0]} intensity={12} distance={6} decay={2} color="#ffd6a8" />
       {/* Innenraum gut lesbar durch das Glas (Referenz): weiche, kühle Grundhelligkeit auf Augenhöhe */}
-      <pointLight position={[-1.0, CEIL - 0.9, 0.6]} intensity={4} distance={8} decay={2} color="#cfdcff" />
-      <pointLight position={[4.6, CEIL - 0.9, 0.6]} intensity={4} distance={8} decay={2} color="#cfdcff" />
+      <OutsideLight position={[-1.0, CEIL - 0.9, 0.6]} out={7} inside={4} distance={9} color="#cfdcff" />
+      <OutsideLight position={[4.6, CEIL - 0.9, 0.6]} out={7} inside={4} distance={9} color="#cfdcff" />
       <pointLight position={[-3.6, CEIL - 0.9, -1.6]} intensity={12} distance={7} decay={2} color="#ffd2a0" />
 
 
@@ -397,12 +415,12 @@ export function Studio({ mobile }: { mobile: boolean }) {
       {/* Front links: dunkle Wand mit hinterleuchtetem Schriftzug; Seitenwand */}
       <mesh position={[(LEFT + glassL) / 2, FLOOR + H * 0.62, FRONT + 0.26]} material={m.sign}><planeGeometry args={[2.2, 0.55]} /></mesh>
       {/* Rückwand: Marmor */}
-      <WallLogo position={[0.4, FLOOR + 1.5, BACK + 0.185]} />
+      <WallLogo position={[-1.2, FLOOR + 1.85, BACK + 0.185]} />
       {(mobile ? [3, 6] : [1, 3, 5, 7]).map((i) => {
         const x = LEFT + 0.6 + i * 1.5;
         return (
           <group key={`spot${i}`}>
-            <SpotDown position={[x, CEIL - 0.06, FRONT + 1.1]} intensity={mobile ? 30 : 38} />
+            <SpotDown position={[x, CEIL - 0.06, FRONT + 1.1]} intensity={mobile ? 45 : 60} />
             <LightCone position={[x, CEIL - 1.35, FRONT + 1.1]} height={2.6} radius={0.85} strength={mobile ? 0.04 : 0.05} />
           </group>
         );

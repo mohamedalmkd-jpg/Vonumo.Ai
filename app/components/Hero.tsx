@@ -150,8 +150,9 @@ export function Hero() {
           <div className="absolute left-4 right-4 top-[11%] sm:left-6 md:top-[22%] md:max-w-[40rem]">
             <p data-eyebrow className={EYEBROW}>01 / VONUMO Studio</p>
             <h1 className="mt-4 text-[clamp(2.2rem,4.2vw,4.2rem)] font-light leading-[1.04] tracking-[-0.02em] text-fg/95">
-              <span className="block"><Chars text="Websites mit Tiefe." /></span>
-              <span className="block font-normal"><Chars text="KI mit Wirkung." /></span>
+              <span className="block"><Chars text="Websites, Interfaces" /></span>
+              <span className="block"><Chars text="und KI-Systeme" /></span>
+              <span className="block font-semibold"><Chars text="mit Wirkung." /></span>
             </h1>
             <p data-up className="mt-4 max-w-[26rem] text-[13px] leading-relaxed text-fg/75 sm:mt-5 sm:text-[15px]">Das digitale Studio für Web Design, Software-Entwicklung und KI-Lösungen für ambitionierte Unternehmen.</p>
             <div data-up className="pointer-events-auto mt-5 flex flex-wrap gap-2 sm:mt-7">
@@ -242,7 +243,7 @@ export function Hero() {
           </div>
           {/* Fakten statt erfundener Kennzahlen – alles Zusagen aus unseren Leistungen */}
           <ul data-up className="absolute bottom-8 left-1/2 hidden w-[min(64rem,92%)] -translate-x-1/2 grid-cols-4 divide-x divide-line-2 text-center md:grid">
-            {[["2–4 Wochen", "bis zum Launch"], ["EU-Hosting", "DSGVO-konform"], ["Ihr Code", "volles Eigentum"], ["∞", "skalierbare Lösungen"]].map(([a, b]) => (
+            {[["2–4 Wochen", "bis zum Launch"], ["DSGVO", "konform & ohne Tracking"], ["Ihr Code", "volles Eigentum"], ["∞", "skalierbare Lösungen"]].map(([a, b]) => (
               <li key={b} className="px-4"><p className="text-[clamp(1.4rem,2.2vw,2rem)] font-light text-fg">{a}</p><p className="mt-1 text-[12px] text-fg/70">{b}</p></li>
             ))}
           </ul>

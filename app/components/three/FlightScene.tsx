@@ -27,10 +27,10 @@ const path = (p: Pose[]): Path => ({
 type Rig = { rests: Pose[]; via: Pose[][] };
 const WIDE: Rig = {
   rests: [
-    { pos: v(-8.6, 1.05, 17.5), tgt: v(-3.2, 2.9, 0) },     // 01 Totale
-    { pos: v(-7.0, 1.0, 11.0), tgt: v(1.0, 2.4, 0.5) },     // 02 näher am Studio
+    { pos: v(-8.4, 2.4, 15.8), tgt: v(-3.0, 2.6, 0) },     // 01 Totale (leicht erhöht, ganzer Pavillon + nasser Vorplatz)
+    { pos: v(-8.2, 2.0, 14.0), tgt: v(0.6, 3.1, 0.5) },     // 02 näher am Studio
     { pos: v(-4.4, 1.7, 7.6), tgt: v(2.4, 3.0, 0) },        // 03 Fassade, Einblick
-    { pos: v(1.7, 2.2, 2.5), tgt: v(-2.0, 1.55, -2.8) },    // 04 Arbeitsplätze
+    { pos: v(1.9, 2.15, 2.9), tgt: v(-1.6, 2.0, -4.0) },     // 04 Arbeitsplätze + Marmorwand mit V
     { pos: v(-0.1, 1.6, 1.3), tgt: v(1.75, 2.1, -3.0) },    // 05 V-Skulptur
     { pos: v(2.4, 1.8, 2.9), tgt: v(2.4, 2.25, -2.6) },     // 06 Schlussbild
   ],
@@ -38,9 +38,9 @@ const WIDE: Rig = {
 };
 const TALL: Rig = {
   rests: [
-    { pos: v(-3.6, 0.6, 19.5), tgt: v(0.7, 5.3, 0) },
+    { pos: v(-3.4, 0.5, 25.0), tgt: v(0.7, 9.8, 0) },
     { pos: v(-6.2, 1.5, 13.5), tgt: v(1.5, 3.2, 0) },
-    { pos: v(-3.0, 1.6, 9.0), tgt: v(1.6, 2.8, 0) },
+    { pos: v(-3.0, 1.6, 9.6), tgt: v(1.6, 3.9, 0) },
     { pos: v(1.8, 2.2, 2.9), tgt: v(-1.8, 2.2, -2.8) },
     { pos: v(1.15, 1.8, 0.75), tgt: v(2.35, 2.75, -2.6) },
     { pos: v(2.4, 1.95, 3.3), tgt: v(2.4, 3.45, -2.6) },

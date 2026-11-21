@@ -79,7 +79,9 @@ We build premium, cinematic, highly interactive websites. Quality target = the o
 
 ## Visual language (current)
 - Night studio / premium dark. **Look target = the owner collage, analysed in `docs/reference-spec.md`** (palette, type, layout, light, materials). It has a navy starry sky, a far alpine band, smooth wet concrete, warm 3000 K architectural light and blue LED accents. No violet architectural light. The V is chamfered and faceted (`makeFacetedV`). Background `--color-ink #040406`, subtle 96px/12px grid.
-- UI per reference: nav Leistungen · Projekte · Studio · Kontakt plus a "Projekt starten ↗" button (no "Blog"/"Insights" until there is content), round menu button on all widths, monospaced eyebrows ("01 / STUDIO"), "↗" on CTAs.
+- UI per reference: nav Leistungen · Projekte · Studio · Insights · Kontakt plus a "Projekt starten ↗" button (owner collage 2026-11-21; "Insights" points to the FAQ/knowledge section `#faq` until there are real articles), round menu button on all widths, monospaced eyebrows ("01 / STUDIO"), "↗" on CTAs.
+- Hero copy (owner collage 2026-11-21): "Websites, Interfaces und KI-Systeme **mit Wirkung.**" Workstation and side screens are on from the start (visible through the glass in ch. 01–02); only the screen wall around the V boots in ch. 05. Exterior blue fill lights (`OutsideLight` in `Studio.tsx`) fade out when the camera passes the glass so the interior stays dark with blue accents.
+- No invented numbers: the reference shows "150+ Projekte / 98 % / 6+ Jahre" – we show verifiable promises instead (2–4 Wochen, DSGVO, Ihr Code, ∞). Never claim "EU-Hosting": the site runs on Vercel (USA, see Datenschutz).
 - Accents: `a1 #4f6bff` (primary blue), `a2 #33e1ff` (cyan focus/hover), `a3 #ff4fa8`, `lime #c4ff3d`. Accents are light, not fill — use sparingly as rim lights, edges, focus.
 - Text: `fg #ecedf3`, `mute #7d7f8f`, `dim #4a4c58`. Labels 11px uppercase, tracking 0.12em.
 - Display type: Outfit Light (300), tight tracking (−0.02 to −0.03em). `.dot` now maps to Outfit Light uppercase. Body: Outfit 15px.
