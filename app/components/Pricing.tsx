@@ -23,7 +23,7 @@ export function Pricing() {
   return (
     <section id="preise" className="relative mx-auto max-w-[1400px] px-4 py-28 sm:px-6 sm:py-36">
       <div className="flex flex-wrap items-end justify-between gap-6">
-        <SectionHead index="05" label="Abos & Preise" title="Pakete." sub="Bauen, hosten, warten – alles in einem Abo. Monatlich kündbar." />
+        <SectionHead index="07" label="Abos & Preise" title="Pakete." sub="Bauen, hosten, warten – alles in einem Abo. Monatlich kündbar." />
         <Reveal className="flex flex-col items-start gap-2">
           <div role="group" aria-label="Abrechnung" className="flex gap-1">
             <button type="button" className="chip" aria-pressed={!yearly} onClick={() => setYearly(false)}>Monatlich</button>

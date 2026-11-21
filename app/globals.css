@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Geist Mono Variable", ui-monospace, monospace;
+  --font-sans: "Outfit Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, monospace;
   --font-dot: "Doto", "Geist Mono Variable", monospace;
   --color-ink: #040406;
@@ -24,7 +25,7 @@
   html.lenis, html.lenis body { height: auto; }
   .lenis.lenis-smooth { scroll-behavior: auto !important; }
   .lenis.lenis-stopped { overflow: hidden; }
-  body { font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.01em; -webkit-font-smoothing: antialiased; overflow-x: clip; }
+  body { font-family: var(--font-sans); font-size: 15px; letter-spacing: 0.005em; -webkit-font-smoothing: antialiased; overflow-x: clip; }
   ::selection { background: var(--color-a1); color: white; }
   :focus-visible { outline: 1px solid var(--color-a2); outline-offset: 3px; }
   section[id] { scroll-margin-top: 72px; }
@@ -41,8 +42,8 @@
       linear-gradient(90deg, rgb(255 255 255 / 0.018) 1px, transparent 1px);
     background-size: 96px 96px, 96px 96px, 12px 12px, 12px 12px;
   }
-  .dot { font-family: var(--font-dot); font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; line-height: 0.92; }
-  .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-mute); }
+  .dot { font-family: var(--font-display); font-weight: 300; text-transform: uppercase; letter-spacing: -0.01em; line-height: 0.95; }
+  .label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.18em; color: var(--color-mute); }
   .hud {
     position: relative; border: 1px solid var(--color-line); background: var(--color-panel);
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -59,7 +60,7 @@
 
   .btn {
     position: relative; display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
-    border: 1px solid var(--color-line-2); padding: .7rem 1.1rem; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    border: 1px solid var(--color-line-2); padding: .75rem 1.2rem; font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
     background: rgb(255 255 255 / .02); overflow: hidden; isolation: isolate;
     transition: color .35s var(--ease-out-expo), border-color .35s;
   }
@@ -80,6 +81,9 @@
   .chip { border: 1px solid var(--color-line); padding: .45rem .7rem; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-mute); transition: all .25s; }
   .chip:hover { color: var(--color-fg); border-color: var(--color-line-2); }
   .chip[aria-pressed="true"] { color: var(--color-ink); background: var(--color-fg); border-color: var(--color-fg); }
+  /* Immersive Kamerafahrt im Hero: Navigation weicht (siehe Hero.tsx) */
+  .site-header { transition: transform .7s var(--ease-out-expo), opacity .5s; }
+  html[data-immersive] .site-header { transform: translateY(-100%); opacity: 0; }
   .scan::after {
     content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 70; opacity: .5;
     background: repeating-linear-gradient(0deg, rgb(0 0 0 / .18) 0 1px, transparent 1px 3px);
@@ -88,6 +92,31 @@
 }
 
 @keyframes blink { 50% { opacity: 0; } }
+
+/* Aufnahmemodus für den Showreel-Film: nur die WebGL-Leinwand ist sichtbar */
+html[data-capture] body * { visibility: hidden !important; }
+html[data-capture] canvas { visibility: visible !important; }
+/* Hero-Hotspots: Lichtpunkt mit pulsierendem Ring */
+.hotspot { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 999px; opacity: 0; transform-origin: center; }
+.hotspot::before { content: ""; position: absolute; inset: 8px; border-radius: 999px; border: 1.5px solid rgb(255 255 255 / .8); animation: hs-ring 2.4s cubic-bezier(.16,1,.3,1) infinite; }
+.hotspot-core { width: 12px; height: 12px; border-radius: 999px; background: #fff; box-shadow: 0 0 0 4px rgb(79 107 255 / .35), 0 0 18px rgb(120 150 255 / .9); transition: transform .4s var(--ease-out-expo); }
+.hotspot:hover .hotspot-core, .hotspot[aria-expanded="true"] .hotspot-core { transform: scale(1.5); }
+.hotspot-label { position: absolute; left: 30px; top: 50%; translate: 0 -50%; white-space: nowrap; font-size: 10px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #fff; padding: 4px 8px; background: rgb(4 4 6 / .55); border: 1px solid rgb(255 255 255 / .18); backdrop-filter: blur(6px); pointer-events: none; }
+@media (max-width: 767px) { .hotspot-label { display: none; } }
+.hotspot-in { animation: hs-in .8s cubic-bezier(.16,1,.3,1) both; }
+@keyframes hs-in { from { opacity: 0; scale: .4; } to { opacity: 1; scale: 1; } }
+@keyframes hs-ring { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(1.9); opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+
+/* Showroom bei „reduzierte Bewegung“: Projekte untereinander statt gepinnter Bildfolge */
+.showroom[data-static] { height: auto !important; }
+.showroom[data-static] > .stage { position: relative; height: auto; overflow: visible; }
+.showroom[data-static] [data-intro] { position: relative; min-height: 70svh; }
+.showroom[data-static] [data-frame] { position: relative; height: 100svh; }
+.showroom[data-static] .counter { display: none; }
+.showroom[data-static] [data-shell] { transform: translate(0, -9.5%) scale(.66); border-radius: 18px; }
+.showroom[data-static] [data-grad] { opacity: 0; }
+@media (min-width: 768px) { .showroom[data-static] [data-shell] { transform: translate(14%, -9%) scale(.66); border-radius: 22px; } }
 @keyframes marquee { to { transform: translateX(-50%); } }
 
 @media (prefers-reduced-motion: reduce) {

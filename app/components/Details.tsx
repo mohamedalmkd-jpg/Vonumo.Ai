@@ -40,15 +40,15 @@ export function Details() {
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div className="mx-auto grid h-full max-w-[1400px] gap-6 px-4 pb-6 pt-20 sm:px-6 lg:grid-cols-[1fr_minmax(0,26rem)]">
           <div className="flex flex-col">
-            <SectionHead index="01" label="Unser Fundament" title="Details zählen." sub="Eine Website ist mehr als ihre Oberfläche: Jede Schicht wird gebaut, um schnell, sicher und auffindbar zu sein." />
+            <SectionHead index="04" label="Unser Fundament" title="Details zählen." sub="Eine Website ist mehr als ihre Oberfläche: Jede Schicht wird gebaut, um schnell, sicher und auffindbar zu sein." />
             <a href="#leistungen" className="btn mt-6 hidden self-start lg:inline-flex">Leistungen entdecken <span aria-hidden="true">→</span></a>
           </div>
           <ol className="flex flex-col gap-1.5 self-start lg:self-center" aria-label="Was jedes Projekt mitbringt">
             {DETAILS.map((d, n) => {
               const on = n === i;
               return (
-                <li key={d.title} ref={(el) => { rows.current[n] = el; }} className={`hud grid grid-cols-[auto_1fr] gap-x-3 p-3 transition-all duration-500 ${on ? "border-line-2 !bg-white/[0.06]" : "opacity-45"}`}>
-                  <span className="label row-span-2 pt-0.5">0{n + 1}</span>
+                <li key={d.title} ref={(el) => { rows.current[n] = el; }} className={`hud grid grid-cols-[auto_1fr] gap-x-3 p-3 transition-all duration-500 ${on ? "border-line-2 !bg-white/[0.06] text-fg" : "text-mute"}`}>
+                  <span className={`label row-span-2 pt-0.5 ${on ? "" : "!text-mute"}`}>0{n + 1}</span>
                   <div className="flex items-center justify-between gap-3">
                     <b className="text-[12px] font-medium uppercase tracking-[0.14em]">{d.title}</b>
                     <Icon name={d.icon} className={on ? "text-a2" : "text-mute"} />

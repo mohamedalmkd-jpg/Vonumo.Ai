@@ -8,24 +8,28 @@ import { getStudioEnv, makeVGeometry, pointer } from "./env";
 type S = { x: number; y: number; s: number; v: number };
 /** Zustände pro Abschnitt: Position in Bildschirm-Anteilen (−1…1), Größe, Sichtbarkeit. */
 const DESK: Record<string, S> = {
-  top: { x: 0, y: 0.02, s: 0.85, v: 1 },
+  arbeiten: { x: 0, y: -1.6, s: 0.6, v: 0 },
+  labor: { x: 0, y: -1.6, s: 0.6, v: 0 },
+  top: { x: 0, y: -0.3, s: 0.6, v: 0 }, // Hero zeigt die Kamerafahrt – das V wartet
   details: { x: -0.12, y: -0.3, s: 1.05, v: 1 },
-  leistungen: { x: 0.1, y: 1.5, s: 0.9, v: 1 },
+  leistungen: { x: 0, y: -1.6, s: 0.6, v: 0 },
   ebenen: { x: 0, y: 1.5, s: 0.6, v: 0 },
   ablauf: { x: -0.7, y: -1.7, s: 1.1, v: 0 },
   faq: { x: -0.6, y: -0.4, s: 1.15, v: 1 },
   kontakt: { x: -0.9, y: -1.6, s: 1, v: 0 },
 };
 const MOB: Record<string, S> = {
-  top: { x: 0, y: 0.08, s: 0.75, v: 1 },
+  arbeiten: { x: 0, y: -1.6, s: 0.5, v: 0 },
+  labor: { x: 0, y: -1.6, s: 0.5, v: 0 },
+  top: { x: 0, y: -0.4, s: 0.5, v: 0 },
   details: { x: 0, y: -0.62, s: 0.8, v: 1 },
-  leistungen: { x: 0, y: 1.5, s: 0.7, v: 1 },
+  leistungen: { x: 0, y: -1.6, s: 0.5, v: 0 },
   ebenen: { x: 0, y: 1.5, s: 0.5, v: 0 },
   ablauf: { x: 0.6, y: -1.7, s: 0.75, v: 0 },
   faq: { x: 0.55, y: -0.78, s: 0.75, v: 1 },
   kontakt: { x: 0.8, y: -1.6, s: 0.7, v: 0 },
 };
-const ORDER = ["top", "details", "leistungen", "ebenen", "ablauf", "faq", "kontakt"];
+const ORDER = ["top", "arbeiten", "leistungen", "labor", "details", "ebenen", "ablauf", "faq", "kontakt"];
 const ease = (t: number) => t * t * (3 - 2 * t);
 
 function useScrollState() {

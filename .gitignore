@@ -6,3 +6,14 @@ out
 *.tsbuildinfo
 next-env.d.ts
 .vercel
+
+# reference video frames
+/reference/frames/
+
+# reanimate: Vergleichsbelege und Skript-Abhängigkeiten
+/.reanimate/
+/.claude/skills/*/scripts/node_modules/
+
+# visuelle Regression: nur Referenzen versionieren
+/tests/visual/current/
+/tests/visual/diff/

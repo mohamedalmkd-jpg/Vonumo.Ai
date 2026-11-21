@@ -52,7 +52,7 @@ export function Layers() {
     <section ref={sec} id="ebenen" className="relative h-[360vh]" aria-label="Technologie – fünf Ebenen einer Website">
       <div data-sticky className="sticky top-0 h-[100svh] overflow-hidden">
         <div className="mx-auto grid h-full max-w-[1400px] grid-rows-[auto_1fr_auto] px-4 pb-6 pt-20 sm:px-6">
-          <SectionHead index="03" label="Technologie" title="Jede Ebene mit Absicht." className="max-w-xl" />
+          <SectionHead index="05" label="Technologie" title="Jede Ebene mit Absicht." className="max-w-xl" />
 
           <div className="relative grid place-items-center [perspective:1600px]">
             <div className="relative h-[min(42vw,320px)] w-[min(42vw,320px)] max-sm:h-[52vw] max-sm:w-[52vw]" style={{ transformStyle: "preserve-3d", transform: `rotateX(58deg) rotateZ(${-42 + p * 18}deg)` }}>

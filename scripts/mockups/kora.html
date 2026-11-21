@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  body { background: #f2efe8; color: #141414; font-family: "Space Grotesk", sans-serif; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 30px 64px; font-size: 15px; }
+  .logo { font-weight: 700; font-size: 26px; letter-spacing: -.04em; display: flex; align-items: center; gap: 10px; }
+  .logo i { width: 26px; height: 26px; border-radius: 50%; background: conic-gradient(#ff6b3d 0 70%, #141414 0); }
+  nav ul { display: flex; gap: 36px; list-style: none; color: #555; }
+  .pill { background: #141414; color: #f2efe8; padding: 13px 22px; border-radius: 99px; font-weight: 500; }
+  .hero { display: grid; grid-template-columns: 1fr 1.05fr; gap: 40px; padding: 30px 64px 0; align-items: center; height: calc(100% - 96px); }
+  .tag { display: inline-flex; gap: 8px; align-items: center; background: #fff; border-radius: 99px; padding: 8px 14px; font-size: 14px; color: #444; box-shadow: 0 1px 0 rgba(0,0,0,.06); }
+  .tag b { background: #b9e769; border-radius: 99px; padding: 2px 8px; font-weight: 600; color: #141414; }
+  h1 { font-size: 104px; line-height: .92; letter-spacing: -.055em; font-weight: 600; margin-top: 26px; }
+  h1 span { color: #ff6b3d; }
+  .sub { font-size: 19px; line-height: 1.5; color: #555; max-width: 470px; margin-top: 26px; }
+  .stores { display: flex; gap: 12px; margin-top: 36px; }
+  .stores div { background: #141414; color: #fff; border-radius: 14px; padding: 12px 20px; font-size: 12px; line-height: 1.25; }
+  .stores b { display: block; font-size: 18px; font-weight: 600; }
+  .stores div:nth-child(2) { background: #fff; color: #141414; box-shadow: inset 0 0 0 1.5px #141414; }
+  .rating { margin-top: 30px; font-size: 14px; color: #666; } .rating b { color: #141414; }
+  .art { position: relative; height: 760px; }
+  .phone { position: absolute; left: 50%; top: 50%; width: 330px; height: 680px; transform: translate(-50%, -50%) rotate(-4deg); background: #141414; border-radius: 52px; padding: 12px; box-shadow: 0 60px 80px -30px rgba(40,30,10,.45); }
+  .screen { width: 100%; height: 100%; border-radius: 42px; background: #fbfaf6; overflow: hidden; padding: 54px 22px 22px; }
+  .hi { font-size: 13px; color: #888; } .hi b { display: block; color: #141414; font-size: 25px; letter-spacing: -.03em; margin-top: 4px; }
+  .ring { margin: 22px auto 0; width: 210px; height: 210px; position: relative; }
+  .ring .c { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-size: 13px; color: #777; }
+  .ring .c b { display: block; font-size: 48px; color: #141414; letter-spacing: -.04em; line-height: 1; }
+  .mini { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+  .mini div { background: #f0ede5; border-radius: 18px; padding: 14px; font-size: 12px; color: #777; }
+  .mini b { display: block; font-size: 22px; color: #141414; letter-spacing: -.03em; margin-top: 6px; }
+  .bars { display: flex; align-items: end; gap: 7px; height: 70px; margin-top: 14px; }
+  .bars i { flex: 1; background: #141414; border-radius: 6px; } .bars i.o { background: #ff6b3d; }
+  .card { position: absolute; background: #fff; border-radius: 26px; padding: 22px 24px; box-shadow: 0 30px 60px -25px rgba(40,30,10,.3); font-size: 14px; color: #777; }
+  .card b { display: block; font-size: 38px; color: #141414; letter-spacing: -.04em; font-weight: 600; }
+  .c1 { left: 0; top: 120px; width: 230px; } .c2 { right: 0; top: 70px; width: 210px; background: #141414; color: #aaa; } .c2 b { color: #b9e769; }
+  .c3 { right: 10px; bottom: 90px; width: 260px; } .c4 { left: 20px; bottom: 60px; width: 200px; background: #ff6b3d; color: #ffe2d6; } .c4 b { color: #fff; }
+  .spark { margin-top: 10px; }
+  @media (max-width: 600px) {
+    nav { padding: 22px 22px; } nav ul { display: none; } .pill { padding: 10px 16px; font-size: 13px; }
+    .hero { grid-template-columns: 1fr; padding: 10px 22px; gap: 0; height: auto; }
+    h1 { font-size: 64px; margin-top: 18px; } .sub { font-size: 16px; margin-top: 16px; }
+    .stores { margin-top: 22px; } .rating { display: none; }
+    .art { height: 520px; margin-top: 10px; } .phone { width: 250px; height: 515px; border-radius: 40px; top: 52%; } .screen { border-radius: 32px; padding: 40px 16px 16px; }
+    .ring { width: 150px; height: 150px; } .ring svg { width: 150px; height: 150px; } .ring .c b { font-size: 34px; }
+    .c1 { top: 30px; width: 170px; padding: 16px; } .c1 b, .c3 b { font-size: 28px; } .c2, .c4 { display: none; } .c3 { bottom: 20px; right: 0; width: 180px; padding: 16px; }
+  }
+</style></head>
+<body>
+<nav><span class="logo"><i></i>kōra</span><ul><li>Funktionen</li><li>Wissenschaft</li><li>Preise</li><li>Für Teams</li></ul><span class="pill">App laden</span></nav>
+<section class="hero">
+  <div>
+    <span class="tag"><b>Neu</b> Schlafanalyse mit Tagesform-Score</span>
+    <h1>Dein Körper.<br><span>Klar</span> erklärt.</h1>
+    <p class="sub">Kōra verbindet Uhr, Ring und Waage zu einer ruhigen Übersicht – mit Empfehlungen, die man wirklich umsetzt.</p>
+    <div class="stores"><div>Laden im<b>App Store</b></div><div>Jetzt bei<b>Google Play</b></div></div>
+    <p class="rating"><b>4,8 ★</b> · Designstudie für eine Gesundheits-App</p>
+  </div>
+  <div class="art">
+    <div class="card c1">Tagesform<b>82 / 100</b><svg class="spark" width="180" height="40" viewBox="0 0 180 40"><path d="M0,30 C20,28 30,10 50,14 S80,34 100,22 140,4 180,8" fill="none" stroke="#ff6b3d" stroke-width="3" stroke-linecap="round"/></svg></div>
+    <div class="card c2">HRV heute<b>68 ms</b>+6 % zur Vorwoche</div>
+    <div class="phone"><div class="screen">
+      <p class="hi">Donnerstag, 14. März<b>Guten Morgen, Lea</b></p>
+      <div class="ring">
+        <svg width="210" height="210" viewBox="0 0 210 210" style="transform: rotate(-90deg)">
+          <circle cx="105" cy="105" r="92" fill="none" stroke="#efece4" stroke-width="16"/>
+          <circle cx="105" cy="105" r="92" fill="none" stroke="#141414" stroke-width="16" stroke-linecap="round" stroke-dasharray="578" stroke-dasharray="578" stroke-dashoffset="104"/>
+          <circle cx="105" cy="105" r="70" fill="none" stroke="#efece4" stroke-width="12"/>
+          <circle cx="105" cy="105" r="70" fill="none" stroke="#ff6b3d" stroke-width="12" stroke-linecap="round" stroke-dasharray="440" stroke-dashoffset="150"/>
+          <circle cx="105" cy="105" r="52" fill="none" stroke="#efece4" stroke-width="10"/>
+          <circle cx="105" cy="105" r="52" fill="none" stroke="#b9e769" stroke-width="10" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="70"/>
+        </svg>
+        <div class="c"><span><b>82</b>Tagesform</span></div>
+      </div>
+      <div class="mini"><div>Schlaf<b>7 h 42</b></div><div>Schritte<b>9.214</b></div></div>
+      <div class="bars"><i style="height:40%"></i><i style="height:62%"></i><i style="height:48%"></i><i style="height:80%"></i><i class="o" style="height:96%"></i><i style="height:58%"></i><i style="height:70%"></i></div>
+    </div></div>
+    <div class="card c3">Schlafphasen<b>1 h 54 Tief</b><svg width="210" height="34" viewBox="0 0 210 34"><g fill="#141414"><rect x="0" y="20" width="40" height="14" rx="4"/><rect x="44" y="6" width="30" height="28" rx="4" fill="#ff6b3d"/><rect x="78" y="14" width="46" height="20" rx="4"/><rect x="128" y="0" width="24" height="34" rx="4" fill="#ff6b3d"/><rect x="156" y="18" width="54" height="16" rx="4"/></g></svg></div>
+    <div class="card c4">Ruhepuls<b>54 bpm</b></div>
+  </div>
+</section>
+</body></html>

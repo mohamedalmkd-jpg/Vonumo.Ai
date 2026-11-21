@@ -4,9 +4,19 @@ export const CONTACT = {
   phoneHref: "tel:+4915906712485",
 };
 
+// Hauptnavigation wie vom Inhaber vorgegeben: Leistungen · Projekte · Studio · Kontakt + „Projekt starten“.
+// „Blog“ aus der Referenz fehlt bewusst: es gibt noch keine Blog-Inhalte (kein toter Link).
 export const NAV = [
   { href: "#leistungen", label: "Leistungen" },
-  { href: "#ebenen", label: "Technologie" },
+  { href: "#arbeiten", label: "Projekte" },
+  { href: "#ebenen", label: "Studio" },
+  { href: "#kontakt", label: "Kontakt" },
+] as const;
+
+/** Vollständiges Menü (rundes Menü-Symbol, auf allen Breiten). */
+export const MENU = [
+  ...NAV.slice(0, 3),
+  { href: "#labor", label: "Material-Labor" },
   { href: "#preise", label: "Preise" },
   { href: "#faq", label: "FAQ" },
   { href: "#kontakt", label: "Kontakt" },
@@ -75,3 +85,24 @@ export const STEPS = [
 ] as const;
 
 export const STACK = ["Next.js", "React", "TypeScript", "WebGL / GLSL", "Motion", "Tailwind CSS", "Vercel", "GitHub"] as const;
+
+/**
+ * Showroom: Designstudien aus dem VONUMO-Studio (keine Kundenprojekte – so auch auf der Seite gekennzeichnet).
+ * Bilder entstehen aus scripts/mockups/*.html über scripts/render-mockups.cjs.
+ */
+export const WORK = [
+  { slug: "aera", name: "ÆRA", kind: "Uhrenmanufaktur", headline: "Zeit, präzise geformt.", text: "Ein ruhiger, dunkler Shop für Luxusuhren: große Serifen, viel Raum und Produktbilder, die wie im Schaufenster wirken.", services: ["Webdesign", "E-Commerce", "Art Direction"], accent: "#d8c3a0" },
+  { slug: "kora", name: "Kōra", kind: "Gesundheits-App", headline: "Dein Körper. Klar erklärt.", text: "Daten von Uhr, Ring und Waage in einer Oberfläche, die man in drei Sekunden versteht – App-Design und Website aus einem System.", services: ["UI/UX-Design", "Designsystem", "Website"], accent: "#ff6b3d" },
+  { slug: "mythos", name: "Mythos", kind: "Kaffeerösterei", headline: "Geröstet für den Moment.", text: "Marke, Verpackung und Shop mit Abo-Funktion – warm, handwerklich und schnell genug für den Kauf am Handy.", services: ["Branding", "Webdesign", "Shop & Abo"], accent: "#b5532d" },
+  { slug: "pilot", name: "Pilot", kind: "KI-Software", headline: "Ihr Team. Mit Autopilot.", text: "Landingpage und Produktoberfläche für einen KI-Assistenten – erklärt komplexe Technik in einem Satz und einer Demo.", services: ["KI-Integration", "Produktdesign", "Entwicklung"], accent: "#8f7dff" },
+] as const;
+
+/** Die sechs Leistungen des interaktiven Leistungsbereichs. Preise wie in PLANS/CARDS; ohne festen Preis: „auf Anfrage“. */
+export const DISCIPLINES = [
+  { key: "design", title: "Web Design & UI/UX", tag: "Art Direction · Figma · Designsystem", from: "in jedem Paket ab 49 €/Monat", text: "Gestaltung und Nutzerführung, die Ihre Marke unverwechselbar machen und Besucher zu Kunden: Typografie, Bildsprache und Bewegung aus einem Guss – getestet auf jedem Gerät.", points: ["Individuelles Design", "Nutzerführung & Prototypen", "Designsystem"] },
+  { key: "3d", title: "3D Web Experiences", tag: "WebGL · Three.js", from: "ab 49 €", text: "Echte 3D-Szenen und Kamerafahrten, flüssig bis aufs Smartphone. Ihre Produkte zum Drehen, Ihre Marke zum Betreten.", points: ["Echtzeit-3D", "Scroll-Kamerafahrten", "Mobil optimiert"] },
+  { key: "ai", title: "KI-Automatisierung", tag: "Assistent · Automatik", from: "ab 199 €", text: "Chatbots, Assistenten und Automationen, die Ihre Abläufe kennen und Ihrem Team jeden Tag Zeit schenken – DSGVO-konform.", points: ["KI-Assistent", "Automatisierung", "EU-Hosting"] },
+  { key: "dev", title: "Software-Entwicklung", tag: "Next.js · React · Edge", from: "in jedem Paket ab 49 €/Monat", text: "Schneller, sauberer Code mit Next.js und TypeScript – von der Website bis zur Web-App, ausgeliefert über ein weltweites Edge-Netzwerk.", points: ["Web-Apps & Schnittstellen", "DSGVO & Sicherheit", "Code gehört Ihnen"] },
+  { key: "brand", title: "Branding", tag: "Logo · Marke · Leitsystem", from: "Preis auf Anfrage", text: "Ein Zeichen, eine Haltung: Markenauftritt aus einem Guss – vom Logo über Farben und Typografie bis zur Website.", points: ["Logo & Wortmarke", "Farben & Typografie", "Markenrichtlinien"] },
+  { key: "perf", title: "Performance-Optimierung", tag: "Core Web Vitals · Lighthouse", from: "Preis auf Anfrage", text: "Wir messen, wo Ihre Seite Zeit verliert, und beheben es: Ladezeit, Interaktion und Stabilität – Ziel Lighthouse 90+.", points: ["Analyse & Bericht", "Core Web Vitals", "Lighthouse 90+"] },
+] as const;
